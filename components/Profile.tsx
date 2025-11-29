@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '../types';
 import { COUNTRIES } from '../constants';
-import Card from './common/Card';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
 import CheckCircleIcon from './icons/CheckCircleIcon';
 import ArrowLeftIcon from './icons/ArrowLeftIcon';
 import DocumentIcon from './icons/DocumentIcon';
 import { supabase } from '../supabaseClient';
 import CameraIcon from './icons/CameraIcon';
 import CameraModal from './CameraModal';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 import PhoneNumberInput from './common/PhoneNumberInput';
 import Spinner from './common/Spinner';
 import { logger } from '../services/logger';
-
+import { PageTransition } from './animations/PageTransition';
 
 interface ProfileProps {
   user: User;
-  // FIX: Changed Omit<> to Pick<> to match the updated handleProfileUpdate signature.
   onProfileUpdate: (updates: Partial<Pick<User, 'fullName' | 'isVerified' | 'phone'>>) => Promise<void>;
 }
 
@@ -27,41 +27,19 @@ enum VerificationStep {
   Processing,
 }
 
-// Helper function to extract a readable error message from various formats.
 const getErrorMessage = (error: unknown): string => {
   const defaultMessage = "Ocurrió un error inesperado. Revisa la calidad de tus imágenes y tu conexión e inténtalo de nuevo.";
-
   if (!error) return defaultMessage;
   if (typeof error === 'string') return error;
   if (error instanceof Error) return error.message;
-
   if (typeof error === 'object') {
     const potentialError = error as any;
-    // Handle nested Gemini API errors
-    if (potentialError.response?.data?.error?.message) {
-      return potentialError.response.data.error.message;
-    }
-    // Handle common nested error structures
-    if (potentialError.error?.message) {
-      return potentialError.error.message;
-    }
-    // Handle standard error objects
-    if (potentialError.message) {
-      return String(potentialError.message);
-    }
+    if (potentialError.response?.data?.error?.message) return potentialError.response.data.error.message;
+    if (potentialError.error?.message) return potentialError.error.message;
+    if (potentialError.message) return String(potentialError.message);
   }
-
-  // Last resort
-  try {
-    const stringified = JSON.stringify(error);
-    if (stringified !== '{}') return stringified;
-  } catch (e) {
-    // Ignore stringify errors
-  }
-
   return defaultMessage;
 };
-
 
 const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   const [step, setStep] = useState<VerificationStep>(VerificationStep.NotStarted);
@@ -74,14 +52,10 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   });
 
   const [docUrls, setDocUrls] = useState<{ id: string | null; address: string | null; selfie: string | null }>({
-    id: null,
-    address: null,
-    selfie: null
+    id: null, address: null, selfie: null
   });
   const [docFiles, setDocFiles] = useState<{ id: File | null; address: File | null; selfie: File | null }>({
-    id: null,
-    address: null,
-    selfie: null
+    id: null, address: null, selfie: null
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [isVerificationDisabled, setIsVerificationDisabled] = useState(false);
@@ -92,37 +66,23 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [userCountry, setUserCountry] = useState<string | null>(null);
 
-  // NEW: Track verification status
   const [verificationStatus, setVerificationStatus] = useState<'not_started' | 'pending' | 'approved' | 'rejected'>('not_started');
   const [verificationData, setVerificationData] = useState<any>(null);
 
-  useEffect(() => {
-    fetchVerificationStatus();
-  }, [user.id]);
-
-  useEffect(() => {
-    fetchUserCountry();
-  }, [user.isVerified, user.id]);
+  useEffect(() => { fetchVerificationStatus(); }, [user.id]);
+  useEffect(() => { fetchUserCountry(); }, [user.isVerified, user.id]);
 
   const fetchVerificationStatus = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_URL}/api/kyc/status/${user.id}`);
-
-      if (!response.ok) {
-        console.error('Error fetching verification status');
-        return;
-      }
-
+      if (!response.ok) return;
       const data = await response.json();
-
       if (data.status && data.status !== 'not_started') {
         setVerificationData(data);
         setVerificationStatus(data.status as any);
       }
-    } catch (err) {
-      console.error('Error fetching verification status:', err);
-    }
+    } catch (err) { console.error('Error fetching verification status:', err); }
   };
 
   const fetchUserCountry = async () => {
@@ -130,21 +90,13 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
         const response = await fetch(`${API_URL}/api/kyc/status/${user.id}`);
-
-        if (!response.ok) {
-          throw new Error('Error fetching country');
-        }
-
+        if (!response.ok) throw new Error('Error fetching country');
         const data = await response.json();
-
         if (data.status && data.status !== 'not_started') {
           const countryName = COUNTRIES.find(c => c.code === data.country)?.name;
           setUserCountry(countryName || data.country || 'No disponible');
         }
-      } catch (err) {
-        console.error('Error fetching user country:', err);
-        setUserCountry('No disponible');
-      }
+      } catch (err) { setUserCountry('No disponible'); }
     }
   };
 
@@ -198,25 +150,13 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     }
 
     try {
-      // 1. Subir documentos a Supabase Storage (mantener lógica existente)
       const uploadDocument = async (file: File, folder: string) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${user.id}/${folder}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('user-documents')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
+        const { error: uploadError } = await supabase.storage.from('user-documents').upload(filePath, file, { cacheControl: '3600', upsert: false });
         if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('user-documents')
-          .getPublicUrl(filePath);
-
+        const { data: { publicUrl } } = supabase.storage.from('user-documents').getPublicUrl(filePath);
         return publicUrl;
       };
 
@@ -226,11 +166,8 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
         uploadDocument(docFiles.selfie, 'selfie')
       ]);
 
-      // 2. Llamar al backend para verificación con Gemini AI
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No hay sesión activa');
-      }
+      if (!session) throw new Error('No hay sesión activa');
 
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_URL}/api/kyc/verify`, {
@@ -245,11 +182,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
           documentId: formData.documentId,
           address: formData.address,
           phone: formData.phone,
-          docUrls: {
-            id: idUrl,
-            address: addressUrl,
-            selfie: selfieUrl
-          }
+          docUrls: { id: idUrl, address: addressUrl, selfie: selfieUrl }
         })
       });
 
@@ -260,29 +193,13 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
       const result = await response.json();
 
-      // 3. Actualizar UI según resultado
       if (result.status === 'approved') {
-        // Auto-aprobado
-        await onProfileUpdate({
-          isVerified: true,
-          phone: formData.phone,
-          fullName: formData.fullName,
-        });
-        logger.info('✅ Auto-approved by AI with confidence:', result.aiConfidence);
+        await onProfileUpdate({ isVerified: true, phone: formData.phone, fullName: formData.fullName });
         setVerificationStatus('approved');
       } else {
-        // Revisión manual
-        logger.info('📋 Sent to manual review. Confidence:', result.aiConfidence);
         setVerificationStatus('pending');
-        setVerificationData({
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          ai_confidence: result.aiConfidence
-        });
-        await onProfileUpdate({
-          phone: formData.phone,
-          fullName: formData.fullName,
-        });
+        setVerificationData({ status: 'pending', created_at: new Date().toISOString(), ai_confidence: result.aiConfidence });
+        await onProfileUpdate({ phone: formData.phone, fullName: formData.fullName });
         setStep(VerificationStep.NotStarted);
       }
 
@@ -307,63 +224,75 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   const renderContent = () => {
     if (user.isVerified) {
       return (
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Mi Perfil</h2>
-          <div className="space-y-6">
-            <VerificationStatus />
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Información Personal</h3>
-              <div className="text-sm">
-                <p className="text-gray-500 dark:text-gray-400">Nombre Completo</p>
-                <p className="font-medium text-gray-800 dark:text-white">{user.fullName}</p>
-              </div>
-              <div className="text-sm">
-                <p className="text-gray-500 dark:text-gray-400">Correo Electrónico</p>
-                <p className="font-medium text-gray-800 dark:text-white">{user.email}</p>
-              </div>
-              <div className="text-sm">
-                <p className="text-gray-500 dark:text-gray-400">Número de Teléfono</p>
-                {!isEditingPhone ? (
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-gray-800 dark:text-white">{phone || 'No establecido'}</p>
-                    <button onClick={() => setIsEditingPhone(true)} className="text-sm font-medium text-indigo-600 hover:text-indigo-500">Editar</button>
-                  </div>
-                ) : (
-                  <div className="mt-1">
-                    <div className="flex items-center gap-2">
-                      <PhoneNumberInput
-                        value={phone}
-                        onChange={setPhone}
-                        className="flex-grow bg-gray-100 dark:bg-slate-900 border-gray-200 dark:border-slate-700 rounded-lg"
-                      />
-                      <button
-                        onClick={handleSavePhone}
-                        disabled={isSaving || phone === (user.phone || '')}
-                        className="flex-shrink-0 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-md disabled:bg-indigo-400 disabled:cursor-wait flex items-center justify-center w-20"
-                      >
-                        {isSaving ? <Spinner className="w-4 h-4" /> : 'Guardar'}
-                      </button>
-                      <button
-                        onClick={() => { setIsEditingPhone(false); setPhone(user.phone || ''); setSaveMessage(null); }}
-                        className="flex-shrink-0 text-sm font-medium text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-gray-300 dark:hover:text-white"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                    {saveMessage && (
-                      <div className="text-right mt-1">
-                        <p className={`text-xs ${saveMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>{saveMessage.text}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="text-sm">
-                <p className="text-gray-500 dark:text-gray-400">País de Residencia</p>
-                <p className="font-medium text-gray-800 dark:text-white">{userCountry || 'Cargando...'}</p>
-              </div>
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+              {user.fullName?.charAt(0) || user.email.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-text-primary">{user.fullName || 'Usuario'}</h2>
+              <p className="text-text-secondary">{user.email}</p>
             </div>
           </div>
+
+          <VerificationStatus />
+
+          <Card variant="default" padding="lg" className="space-y-6">
+            <h3 className="text-lg font-bold text-text-primary border-b border-border pb-4">Información Personal</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <p className="text-sm text-text-secondary">Nombre Completo</p>
+                <p className="font-medium text-text-primary">{user.fullName}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-text-secondary">Correo Electrónico</p>
+                <p className="font-medium text-text-primary">{user.email}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-text-secondary">País de Residencia</p>
+                <p className="font-medium text-text-primary">{userCountry || 'Cargando...'}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-text-secondary">Número de Teléfono</p>
+                {!isEditingPhone ? (
+                  <div className="flex items-center gap-3">
+                    <p className="font-medium text-text-primary">{phone || 'No establecido'}</p>
+                    <button onClick={() => setIsEditingPhone(true)} className="text-xs font-bold text-primary hover:underline">Editar</button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mt-1">
+                    <PhoneNumberInput
+                      value={phone}
+                      onChange={setPhone}
+                      className="bg-bg-secondary border-border rounded-lg"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleSavePhone}
+                      disabled={isSaving || phone === (user.phone || '')}
+                      isLoading={isSaving}
+                    >
+                      Guardar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => { setIsEditingPhone(false); setPhone(user.phone || ''); setSaveMessage(null); }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+                {saveMessage && (
+                  <p className={`text-xs mt-1 ${saveMessage.type === 'success' ? 'text-success' : 'text-error'}`}>{saveMessage.text}</p>
+                )}
+              </div>
+            </div>
+          </Card>
         </div>
       );
     }
@@ -371,8 +300,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     switch (step) {
       case VerificationStep.NotStarted:
         return (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Mi Perfil</h2>
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-text-primary mb-2">Verificación de Identidad</h2>
+              <p className="text-text-secondary">Completa tu perfil para desbloquear todas las funciones.</p>
+            </div>
             <VerificationStatus
               onStart={() => setStep(VerificationStep.FormDetails)}
               status={verificationStatus}
@@ -382,50 +314,96 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
         );
       case VerificationStep.FormDetails:
         return (
-          <form onSubmit={handleFormSubmit}>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Verificación - Paso 1/2</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">Ingresa tu información personal.</p>
-            <div className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <button type="button" onClick={() => setStep(VerificationStep.NotStarted)} className="p-2 rounded-full hover:bg-bg-secondary transition-colors">
+                <ArrowLeftIcon className="w-6 h-6 text-text-primary" />
+              </button>
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-600 dark:text-gray-300">Nombre Completo</label>
-                <input type="text" name="fullName" id="fullName" value={formData.fullName} onChange={handleInputChange} required className="mt-1 block w-full bg-gray-100 dark:bg-slate-900 border-transparent rounded-lg py-3 px-4 focus:ring-2 focus:ring-indigo-600 focus:border-transparent" />
+                <h2 className="text-2xl font-bold text-text-primary">Datos Personales</h2>
+                <p className="text-text-secondary text-sm">Paso 1 de 2</p>
               </div>
-              <div>
-                <label htmlFor="country" className="block text-sm font-medium text-gray-600 dark:text-gray-300">País de Residencia</label>
-                <select name="country" id="country" value={formData.country} onChange={handleInputChange} required className="mt-1 block w-full bg-gray-100 dark:bg-slate-900 border-transparent rounded-lg py-3 px-4 focus:ring-2 focus:ring-indigo-600 focus:border-transparent">
-                  {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                </select>
+            </div>
+
+            <Card variant="default" padding="lg" className="space-y-6">
+              <Input
+                label="Nombre Completo"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                required
+              />
+
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-text-secondary ml-1">País de Residencia</label>
+                <div className="relative">
+                  <select
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 bg-white border-2 border-border rounded-2xl appearance-none focus:outline-none focus:border-primary transition-colors"
+                  >
+                    {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label htmlFor="documentId" className="block text-sm font-medium text-gray-600 dark:text-gray-300">Documento de Identidad (ID)</label>
-                <input type="text" name="documentId" id="documentId" value={formData.documentId} onChange={handleInputChange} required className="mt-1 block w-full bg-gray-100 dark:bg-slate-900 border-transparent rounded-lg py-3 px-4 focus:ring-2 focus:ring-indigo-600 focus:border-transparent" placeholder="Escribe el número tal como aparece" />
-              </div>
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-600 dark:text-gray-300">Dirección</label>
-                <input type="text" name="address" id="address" value={formData.address} onChange={handleInputChange} required className="mt-1 block w-full bg-gray-100 dark:bg-slate-900 border-transparent rounded-lg py-3 px-4 focus:ring-2 focus:ring-indigo-600 focus:border-transparent" />
-              </div>
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Número de Teléfono</label>
+
+              <Input
+                label="Documento de Identidad (ID)"
+                name="documentId"
+                value={formData.documentId}
+                onChange={handleInputChange}
+                required
+                placeholder="Número de documento"
+              />
+
+              <Input
+                label="Dirección"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                required
+              />
+
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-text-secondary ml-1">Número de Teléfono</label>
                 <PhoneNumberInput
                   value={formData.phone}
                   onChange={handlePhoneInputChange}
-                  className="bg-gray-100 dark:bg-slate-900 border-transparent rounded-lg focus-within:ring-2 focus-within:ring-indigo-600 focus-within:border-transparent"
+                  className="bg-white border-2 border-border rounded-2xl focus-within:border-primary transition-colors"
                   required
                 />
               </div>
-              <button type="submit" disabled={!formData.documentId || !formData.address || !formData.fullName || !formData.phone} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">Continuar</button>
-            </div>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full mt-4"
+                disabled={!formData.documentId || !formData.address || !formData.fullName || !formData.phone}
+              >
+                Continuar
+              </Button>
+            </Card>
           </form>
         );
       case VerificationStep.UploadDocuments:
         return (
-          <div>
-            <div className="flex items-center gap-4 mb-2">
-              <button onClick={() => setStep(VerificationStep.FormDetails)} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white p-1 rounded-full"><ArrowLeftIcon className="w-6 h-6" /></button>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Verificación - Paso 2/2</h2>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <button onClick={() => setStep(VerificationStep.FormDetails)} className="p-2 rounded-full hover:bg-bg-secondary transition-colors">
+                <ArrowLeftIcon className="w-6 h-6 text-text-primary" />
+              </button>
+              <div>
+                <h2 className="text-2xl font-bold text-text-primary">Documentos</h2>
+                <p className="text-text-secondary text-sm">Paso 2 de 2</p>
+              </div>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">Carga tus documentos para confirmar tu identidad.</p>
-            <div className="space-y-4">
+
+            <Card variant="default" padding="lg" className="space-y-6">
               <UploadItem
                 title="Documento de Identidad"
                 description="Sube o toma una foto clara de tu DNI o pasaporte."
@@ -438,7 +416,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <UploadItem
                 title="Comprobante de Domicilio"
                 description="Una factura de servicio o estado de cuenta reciente."
-                tooltipText="Debe ser un documento reciente (últimos 3 meses) donde tu nombre y dirección sean legibles. Sube el documento completo, no solo una parte."
+                tooltipText="Debe ser un documento reciente (últimos 3 meses) donde tu nombre y dirección sean legibles."
                 userId={user.id}
                 isUploaded={!!docUrls.address}
                 onUploadSuccess={(url, file) => handleDocUploadSuccess('address', url, file)}
@@ -447,39 +425,50 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <UploadItem
                 title="Selfie"
                 description="Toma una foto clara de tu rostro."
-                tooltipText="Tómate la foto en un lugar bien iluminado, sin gafas ni sombreros. Tu rostro debe estar centrado y completamente visible."
+                tooltipText="Tómate la foto en un lugar bien iluminado, sin gafas ni sombreros."
                 userId={user.id}
                 isUploaded={!!docUrls.selfie}
                 onUploadSuccess={(url, file) => handleDocUploadSuccess('selfie', url, file)}
                 onRemove={() => handleDocRemove('selfie')}
               />
-              {formError &&
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 rounded-md text-sm text-red-700 dark:text-red-300 text-center">
-                  <strong>Error de Verificación:</strong> {formError}
+
+              {formError && (
+                <div className="p-4 bg-error/10 rounded-xl text-error text-center font-medium border border-error/20">
+                  {formError}
                 </div>
-              }
-              <button onClick={handleFinalSubmit} disabled={!docUrls.id || !docUrls.address || !docUrls.selfie || isVerificationDisabled} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+              )}
+
+              <Button
+                onClick={handleFinalSubmit}
+                size="lg"
+                className="w-full mt-4"
+                disabled={!docUrls.id || !docUrls.address || !docUrls.selfie || isVerificationDisabled}
+              >
                 Enviar Verificación
-              </button>
-            </div>
+              </Button>
+            </Card>
           </div>
         );
       case VerificationStep.Processing:
         return (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <h3 className="mt-4 text-xl font-semibold text-gray-800 dark:text-white">Verificando con IA</h3>
-            <p className="text-gray-500 dark:text-gray-400">Analizando documentos y biometría... Esto puede tardar un momento.</p>
-          </div>
+          <Card className="text-center py-16 flex flex-col items-center justify-center">
+            <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-8" />
+            <h3 className="text-2xl font-bold text-text-primary mb-2">Verificando con IA</h3>
+            <p className="text-text-secondary max-w-md mx-auto">
+              Estamos analizando tus documentos y biometría para verificar tu identidad. Esto solo tomará unos segundos.
+            </p>
+          </Card>
         );
     }
   };
 
-  const verifiedCardClass = user.isVerified
-    ? 'border-purple-500/50 bg-gradient-to-br from-white to-purple-50 dark:from-gray-800 dark:to-purple-900/20'
-    : '';
-
-  return <Card className={verifiedCardClass}>{renderContent()}</Card>;
+  return (
+    <PageTransition>
+      <div className="max-w-2xl mx-auto">
+        {renderContent()}
+      </div>
+    </PageTransition>
+  );
 };
 
 const VerificationStatus: React.FC<{ onStart?: () => void; status?: string; data?: any }> = ({ onStart, status, data }) => {
@@ -487,63 +476,50 @@ const VerificationStatus: React.FC<{ onStart?: () => void; status?: string; data
   const isPending = status === 'pending';
   const isRejected = status === 'rejected';
 
-  const bgColor = isVerified ? 'bg-green-100 dark:bg-green-900/50'
-    : isPending ? 'bg-blue-100 dark:bg-blue-900/50'
-      : isRejected ? 'bg-red-100 dark:bg-red-900/50'
-        : 'bg-yellow-100 dark:bg-yellow-900/50';
+  const styles = isVerified
+    ? { bg: 'bg-gradient-to-br from-success/10 to-success/5', border: 'border-success/20', icon: 'text-success', title: 'text-success-dark' }
+    : isPending
+      ? { bg: 'bg-gradient-to-br from-warning/10 to-warning/5', border: 'border-warning/20', icon: 'text-warning', title: 'text-warning-dark' }
+      : isRejected
+        ? { bg: 'bg-gradient-to-br from-error/10 to-error/5', border: 'border-error/20', icon: 'text-error', title: 'text-error' }
+        : { bg: 'bg-gradient-to-br from-primary/10 to-primary/5', border: 'border-primary/20', icon: 'text-primary', title: 'text-primary-dark' };
 
-  const iconBgColor = isVerified ? 'bg-green-200 dark:bg-green-800'
-    : isPending ? 'bg-blue-200 dark:bg-blue-800'
-      : isRejected ? 'bg-red-200 dark:bg-red-800'
-        : 'bg-yellow-200 dark:bg-yellow-800';
-
-  const textColor = isVerified ? 'text-green-800 dark:text-green-300'
-    : isPending ? 'text-blue-800 dark:text-blue-300'
-      : isRejected ? 'text-red-800 dark:text-red-300'
-        : 'text-yellow-800 dark:text-yellow-300';
-
-  const subtextColor = isVerified ? 'text-green-600 dark:text-green-400'
-    : isPending ? 'text-blue-600 dark:text-blue-400'
-      : isRejected ? 'text-red-600 dark:text-red-400'
-        : 'text-yellow-600 dark:text-yellow-400';
-
-  const icon = isVerified ? <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
-    : isPending ? <Spinner className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+  const icon = isVerified ? <CheckCircleIcon className="w-8 h-8" />
+    : isPending ? <Spinner className="w-8 h-8" />
       : isRejected ? <span className="text-2xl">❌</span>
-        : <span className="text-2xl">⚠️</span>;
+        : <span className="text-2xl">🛡️</span>;
 
   const title = isVerified ? 'Identidad Verificada'
     : isPending ? 'Verificación en Revisión'
       : isRejected ? 'Verificación Rechazada'
         : 'Verificación Requerida';
 
-  const subtitle = isVerified ? 'Puedes realizar transacciones sin límites.'
-    : isPending ? `Tu verificación está siendo revisada. Te notificaremos cuando esté lista.${data?.ai_confidence ? ` (Confianza IA: ${(data.ai_confidence * 100).toFixed(0)}%)` : ''}`
+  const subtitle = isVerified ? 'Tu cuenta está totalmente verificada. Puedes realizar envíos sin límites.'
+    : isPending ? `Tu verificación está siendo revisada manualmente.${data?.ai_confidence ? ` (Confianza IA: ${(data.ai_confidence * 100).toFixed(0)}%)` : ''}`
       : isRejected ? 'Tu verificación fue rechazada. Por favor, intenta de nuevo con documentos válidos.'
-        : 'Completa la verificación para enviar dinero.';
+        : 'Para cumplir con las regulaciones y garantizar la seguridad, necesitamos verificar tu identidad antes de realizar envíos.';
 
   return (
-    <div className={`p-4 rounded-lg flex items-center gap-4 ${bgColor}`}>
-      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${iconBgColor}`}>
-        {icon}
-      </div>
-      <div className="flex-1">
-        <h3 className={`font-bold ${textColor}`}>
-          {title}
-        </h3>
-        <p className={`text-sm ${subtextColor}`}>
-          {subtitle}
-        </p>
+    <Card className={`${styles.bg} border ${styles.border} p-6`}>
+      <div className="flex items-start gap-4">
+        <div className={`p-3 bg-white/80 rounded-full shadow-sm ${styles.icon}`}>
+          {icon}
+        </div>
+        <div className="flex-1">
+          <h3 className={`text-lg font-bold mb-1 ${styles.title}`}>{title}</h3>
+          <p className="text-text-secondary text-sm leading-relaxed">{subtitle}</p>
+        </div>
       </div>
       {!isVerified && !isPending && (
-        <button onClick={onStart} className="ml-auto bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
-          {isRejected ? 'Intentar de Nuevo' : 'Verificar Ahora'}
-        </button>
+        <div className="mt-6 flex justify-end">
+          <Button onClick={onStart} variant={isRejected ? 'secondary' : 'primary'}>
+            {isRejected ? 'Intentar de Nuevo' : 'Iniciar Verificación'}
+          </Button>
+        </div>
       )}
-    </div>
+    </Card>
   );
 };
-
 
 const UploadItem: React.FC<{
   title: string;
@@ -561,7 +537,6 @@ const UploadItem: React.FC<{
 
   const handleFileSelect = async (file: File | null) => {
     if (!file) return;
-
     setError(null);
     setIsUploading(true);
     let filePath = '';
@@ -569,15 +544,11 @@ const UploadItem: React.FC<{
     try {
       const fileExt = file.name.split('.').pop();
       const documentType = title.toLowerCase().includes('identidad') ? 'id-document'
-        : title.toLowerCase().includes('domicilio') ? 'address-proof'
-          : 'selfie';
+        : title.toLowerCase().includes('domicilio') ? 'address-proof' : 'selfie';
       const fileName = `${documentType}-${Date.now()}.${fileExt}`;
       filePath = `${userId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('user-documents')
-        .upload(filePath, file, { upsert: false });
-
+      const { error: uploadError } = await supabase.storage.from('user-documents').upload(filePath, file, { upsert: false });
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage.from('user-documents').getPublicUrl(filePath);
@@ -586,73 +557,39 @@ const UploadItem: React.FC<{
     } catch (err) {
       const e = err as Error;
       console.error('Error durante la carga:', e);
-      setError(e.message || 'Error al procesar el archivo. Intenta de nuevo.');
+      setError(e.message || 'Error al procesar el archivo.');
       if (filePath) supabase.storage.from('user-documents').remove([filePath]);
-      onRemove(); // Limpiar el estado si falla
+      onRemove();
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const triggerFileInput = () => {
-    if (!isUploading && !isUploaded) {
-      fileInputRef.current?.click();
-    }
+    if (!isUploading && !isUploaded) fileInputRef.current?.click();
   };
 
-  const statusText =
-    isUploading ? "Subiendo..."
-      : isUploaded ? "Documento cargado."
-        : description;
-
-  const statusColorClass =
-    isUploading ? "text-blue-600 dark:text-blue-400"
-      : isUploaded ? "text-green-600 dark:text-green-400"
-        : "text-gray-500 dark:text-gray-400";
-
-  const borderColorClass = error
-    ? "border-red-500/50"
-    : isUploaded
-      ? "border-green-500/50"
-      : "border-gray-200 dark:border-gray-700";
-
   return (
-    <div className={`bg-gray-50 dark:bg-slate-800/50 border ${borderColorClass} p-4 rounded-lg transition-colors`}>
+    <div className={`border-2 border-dashed rounded-2xl p-4 transition-all ${isUploaded ? 'border-success/50 bg-success/5' : 'border-border hover:border-primary/50 hover:bg-bg-secondary'
+      }`}>
       {isCameraOpen && <CameraModal onCapture={handleFileSelect} onClose={() => setIsCameraOpen(false)} />}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-grow flex items-center gap-4">
-          <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full transition-colors ${isUploaded ? 'bg-green-100 dark:bg-green-900/50' : 'bg-gray-100 dark:bg-slate-700'
-            }`}>
-            <DocumentIcon className={`w-6 h-6 ${isUploaded ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
-              }`} />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <p className="font-semibold text-gray-800 dark:text-white">{title}</p>
 
-              {/* --- TOOLTIP --- */}
-              <div className="relative group flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-gray-800 dark:bg-slate-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                  {tooltipText}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800 dark:border-t-slate-900"></div>
-                </div>
-              </div>
-
-              {isUploaded && <CheckCircleIcon className="w-5 h-5 text-green-500 dark:text-green-400" />}
-            </div>
-            <p className={`text-xs mt-1 ${statusColorClass}`}>
-              {statusText}
-            </p>
-          </div>
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isUploaded ? 'bg-success/20 text-success-dark' : 'bg-bg-tertiary text-text-secondary'
+          }`}>
+          {isUploading ? <Spinner className="w-6 h-6" /> : <DocumentIcon className="w-6 h-6" />}
         </div>
 
-        <div className="flex-shrink-0 flex items-center justify-center gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-bold text-text-primary truncate">{title}</p>
+            {isUploaded && <CheckCircleIcon className="w-5 h-5 text-success" />}
+          </div>
+          <p className="text-xs text-text-secondary truncate">{isUploaded ? 'Documento cargado correctamente' : description}</p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
           <input
             type="file"
             ref={fileInputRef}
@@ -660,38 +597,35 @@ const UploadItem: React.FC<{
             className="hidden"
             accept="image/png, image/jpeg, application/pdf"
           />
+
           {!isUploaded && !isUploading && (
             <>
               <button
-                title="Tomar foto"
                 onClick={() => setIsCameraOpen(true)}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 font-semibold p-3 rounded-lg transition-colors"
+                className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                title="Usar cámara"
               >
-                <CameraIcon className="w-5 h-5" />
+                <CameraIcon className="w-6 h-6" />
               </button>
-              <button
-                onClick={triggerFileInput}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors"
-              >
-                Cargar
-              </button>
+              <Button size="sm" onClick={triggerFileInput}>
+                Subir
+              </Button>
             </>
           )}
-          {isUploading && (
-            <div className="w-8 h-8 rounded-full border-4 border-t-blue-600 border-gray-200 dark:border-gray-600 animate-spin"></div>
-          )}
+
           {isUploaded && (
-            <button onClick={onRemove} className="bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900 text-red-600 dark:text-red-300 text-sm font-semibold py-2 px-4 rounded-lg transition-colors">
-              Eliminar
+            <button
+              onClick={onRemove}
+              className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors"
+              title="Eliminar"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
           )}
         </div>
       </div>
-      {error &&
-        <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/30 rounded-md text-sm text-red-700 dark:text-red-300">
-          <strong>Error:</strong> {error}
-        </div>
-      }
+
+      {error && <p className="text-xs text-error mt-2 pl-16">{error}</p>}
     </div>
   );
 }
