@@ -1,48 +1,30 @@
 // Service to fetch live exchange rates from ExchangeRate-API
 // Free tier: 1500 requests/month (enough for MVP)
 // Docs: https://www.exchangerate-api.com/docs/overview
-
-const BASE_URL = 'https://api.exchangerate-api.com/v4/latest';
-
-export interface ExchangeRates {
-    base: string;
-    date: string;
-    rates: { [currency: string]: number };
-    timestamp?: number; // For caching
+// Backend returns array of Country objects with exchangeRateToUSD
+if (Array.isArray(countriesData)) {
+    countriesData.forEach((country: any) => {
+        if (country.currency && country.exchangeRateToUSD) {
+            rates[country.currency] = country.exchangeRateToUSD;
+        }
+    });
 }
 
-/**
- * Fetches live exchange rates with USD as base currency
-        const countriesData = await response.json();
+// Add timestamp
+const ratesWithTimestamp: ExchangeRates = {
+    base: 'USD',
+    date: new Date().toISOString().split('T')[0],
+    rates: rates,
+    timestamp: Date.now(),
+};
 
-        // Transform backend array format to the expected rates object format
-        const rates: { [currency: string]: number } = {};
-
-        // Map the backend data to the rates object
-        // Backend returns array of Country objects with exchangeRateToUSD
-        if (Array.isArray(countriesData)) {
-            countriesData.forEach((country: any) => {
-                if (country.currency && country.exchangeRateToUSD) {
-                    rates[country.currency] = country.exchangeRateToUSD;
-                }
-            });
-        }
-
-        // Add timestamp
-        const ratesWithTimestamp: ExchangeRates = {
-            base: 'USD',
-            date: new Date().toISOString().split('T')[0],
-            rates: rates,
-            timestamp: Date.now(),
-        };
-
-        console.log('✅ Exchange rates loaded from Backend');
-        return ratesWithTimestamp;
+console.log('✅ Exchange rates loaded from Backend');
+return ratesWithTimestamp;
 
     } catch (error) {
-        console.error('❌ Error fetching exchange rates from backend:', error);
-        return null;
-    }
+    console.error('❌ Error fetching exchange rates from backend:', error);
+    return null;
+}
 }
 
 /**
