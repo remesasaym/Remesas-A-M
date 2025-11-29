@@ -55,76 +55,117 @@ const Header: React.FC<HeaderProps> = ({ user, setActiveScreen }) => {
   }, [dropdownRef]);
 
   return (
-    <header className="py-4 px-4 md:px-8 bg-white dark:bg-gray-800 shadow-sm z-40 relative transition-colors duration-300">
+    <motion.header
+      className="fixed top-0 left-0 right-0 py-4 px-4 md:px-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-border/50 dark:border-gray-700/50 z-50 transition-colors duration-300"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+    >
       <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center gap-3">
+        {/* Logo */}
+        <motion.div
+          className="flex items-center gap-3"
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 400 }}
+        >
           <LogoIcon className="h-8 w-auto text-gray-800 dark:text-white" />
-          <span className="text-xl font-bold hidden sm:inline text-gray-800 dark:text-white">Remesas A&M</span>
-        </div>
+          <span className="text-xl font-bold hidden sm:inline bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Remesas A&M
+          </span>
+        </motion.div>
+
+        {/* Right side actions */}
         <div className="flex items-center gap-4">
-          <button
+          {/* Theme toggle */}
+          <motion.button
             onClick={toggleTheme}
-            className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 p-2 rounded-full transition-colors duration-300"
+            className="bg-bg-secondary dark:bg-gray-700 text-text-secondary dark:text-gray-300 hover:bg-bg-tertiary dark:hover:bg-gray-600 p-2.5 rounded-full transition-colors duration-300"
             aria-label="Toggle theme"
+            whileHover={{ scale: 1.1, rotate: 15 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             {theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
-          </button>
+          </motion.button>
 
+          {/* User menu */}
           <div className="relative" ref={dropdownRef}>
-            <button
+            <motion.button
               onClick={() => setIsDropdownOpen(prev => !prev)}
-              className="flex items-center gap-3 bg-gray-100 dark:bg-slate-700/50 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-full py-1.5 pl-1.5 pr-4 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-indigo-500"
+              className="flex items-center gap-3 bg-gradient-to-r from-primary/10 to-secondary/10 dark:bg-slate-700/50 hover:from-primary/20 hover:to-secondary/20 dark:hover:bg-slate-700 rounded-full py-2 pl-2 pr-4 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/20"
               aria-expanded={isDropdownOpen}
               aria-haspopup="true"
               id="user-menu-button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <UserAvatarIcon className="h-8 w-8 text-white" />
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 hidden md:inline truncate max-w-[150px]">{user.fullName}</span>
-            </button>
+              <span className="text-sm font-semibold text-text-primary dark:text-gray-200 hidden md:inline truncate max-w-[150px]">
+                {user.fullName}
+              </span>
+            </motion.button>
+
+            {/* Dropdown menu */}
             <AnimatePresence>
               {isDropdownOpen && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  // FIX: Added `as const` to the `ease` property to satisfy Framer Motion's strict type requirements.
-                  transition={{ duration: 0.15, ease: 'easeOut' as const }}
-                  className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-xl origin-top-right z-50"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 20
+                  }}
+                  className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-800 border border-border dark:border-slate-700 rounded-2xl shadow-xl origin-top-right z-50 overflow-hidden"
                   role="menu"
                   aria-orientation="vertical"
                   aria-labelledby="user-menu-button"
                 >
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700">
-                    <p className="font-semibold text-sm text-gray-800 dark:text-white truncate">{user.fullName}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                  {/* User info */}
+                  <div className="px-4 py-3 bg-gradient-to-r from-primary/5 to-secondary/5 dark:bg-slate-700/50 border-b border-border dark:border-slate-700">
+                    <p className="font-semibold text-sm text-text-primary dark:text-white truncate">{user.fullName}</p>
+                    <p className="text-xs text-text-secondary dark:text-gray-400 truncate">{user.email}</p>
                   </div>
+
+                  {/* Menu items */}
                   <div className="py-1">
-                    <button
+                    <motion.button
                       onClick={() => { setActiveScreen(Screen.Profile); setIsDropdownOpen(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-primary dark:text-gray-300 hover:bg-bg-secondary dark:hover:bg-slate-700 transition-colors text-left"
                       role="menuitem"
+                      whileHover={{ x: 4 }}
+                      transition={{ type: 'spring', stiffness: 400 }}
                     >
-                      <UserCircleIcon className="h-5 w-5" />
+                      <UserCircleIcon className="h-5 w-5 text-primary" />
                       <span>Mi Perfil</span>
-                    </button>
+                    </motion.button>
+
                     {(user.email === 'pineroanthony2@gmail.com' || user.id === '9ddd1796-86f1-4c39-81c2-9e7c4b64ceda') && (
-                      <button
+                      <motion.button
                         onClick={() => { setActiveScreen(Screen.Admin); setIsDropdownOpen(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-secondary dark:text-secondary-light hover:bg-secondary/10 dark:hover:bg-secondary/20 transition-colors text-left"
                         role="menuitem"
+                        whileHover={{ x: 4 }}
+                        transition={{ type: 'spring', stiffness: 400 }}
                       >
                         <UserCircleIcon className="h-5 w-5" />
                         <span>Panel de Administración</span>
-                      </button>
+                      </motion.button>
                     )}
-                    <button
+
+                    <div className="border-t border-border dark:border-slate-700 my-1" />
+
+                    <motion.button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/10 dark:hover:bg-error/20 transition-colors text-left"
                       role="menuitem"
+                      whileHover={{ x: 4 }}
+                      transition={{ type: 'spring', stiffness: 400 }}
                     >
                       <LogoutIcon className="h-5 w-5" />
                       <span>Cerrar Sesión</span>
-                    </button>
+                    </motion.button>
                   </div>
                 </motion.div>
               )}
@@ -132,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({ user, setActiveScreen }) => {
           </div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
