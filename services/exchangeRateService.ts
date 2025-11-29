@@ -1,30 +1,56 @@
 // Service to fetch live exchange rates from ExchangeRate-API
 // Free tier: 1500 requests/month (enough for MVP)
 // Docs: https://www.exchangerate-api.com/docs/overview
-// Backend returns array of Country objects with exchangeRateToUSD
-if (Array.isArray(countriesData)) {
-    countriesData.forEach((country: any) => {
-        if (country.currency && country.exchangeRateToUSD) {
-            rates[country.currency] = country.exchangeRateToUSD;
-        }
-    });
+
+export interface ExchangeRates {
+    base: string;
+    date: string;
+    rates: { [currency: string]: number };
+    timestamp?: number; // For caching
 }
 
-// Add timestamp
-const ratesWithTimestamp: ExchangeRates = {
-    base: 'USD',
-    date: new Date().toISOString().split('T')[0],
-    rates: rates,
-    timestamp: Date.now(),
-};
+/**
+ * Fetches live exchange rates with USD as base currency
+ */
+export async function fetchExchangeRates(): Promise<ExchangeRates | null> {
+    try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+        const response = await fetch(`${API_URL}/api/rates`);
 
-console.log('✅ Exchange rates loaded from Backend');
-return ratesWithTimestamp;
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const countriesData = await response.json();
+
+        // Transform backend array format to the expected rates object format
+        const rates: { [currency: string]: number } = {};
+
+        // Map the backend data to the rates object
+        // Backend returns array of Country objects with exchangeRateToUSD
+        if (Array.isArray(countriesData)) {
+            countriesData.forEach((country: any) => {
+                if (country.currency && country.exchangeRateToUSD) {
+                    rates[country.currency] = country.exchangeRateToUSD;
+                }
+            });
+        }
+
+        // Add timestamp
+        const ratesWithTimestamp: ExchangeRates = {
+            base: 'USD',
+            date: new Date().toISOString().split('T')[0],
+            rates: rates,
+            timestamp: Date.now(),
+        };
+
+        console.log('✅ Exchange rates loaded from Backend');
+        return ratesWithTimestamp;
 
     } catch (error) {
-    console.error('❌ Error fetching exchange rates from backend:', error);
-    return null;
-}
+        console.error('❌ Error fetching exchange rates from backend:', error);
+        return null;
+    }
 }
 
 /**
