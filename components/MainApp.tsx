@@ -31,16 +31,19 @@ const NavItem: React.FC<{
   onClick: () => void;
   icon: React.ReactNode;
 }> = ({ label, isActive, onClick, icon }) => (
-  <button
+  <motion.button
     onClick={onClick}
-    className={`flex-shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2 p-2 sm:p-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${isActive
-      ? 'bg-indigo-600 text-white shadow-lg'
-      : 'bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-700/50 dark:hover:bg-gray-700 dark:text-gray-300'
+    className={`flex-shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${isActive
+      ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-primary'
+      : 'bg-bg-secondary hover:bg-bg-tertiary text-text-secondary hover:text-text-primary dark:bg-gray-700/50 dark:hover:bg-gray-700 dark:text-gray-300 dark:hover:text-white'
       }`}
+    whileHover={{ scale: isActive ? 1 : 1.05, y: isActive ? 0 : -2 }}
+    whileTap={{ scale: 0.95 }}
+    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
   >
     {icon}
-    {label}
-  </button>
+    <span className="hidden sm:inline">{label}</span>
+  </motion.button>
 );
 
 // FIX: Moved icon components outside MainApp to prevent re-creation on every render.
@@ -124,38 +127,38 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
     <div className="flex flex-col min-h-screen bg-bg-primary dark:bg-gray-900">
       <Header user={user} setActiveScreen={setActiveScreen} />
       {/* Add padding-top to account for fixed header */}
-      <main className="flex-grow pt-24 p-2 sm:p-4 md:p-8 container mx-auto"
+      <main className="flex-grow pt-24 p-2 sm:p-4 md:p-8 container mx-auto">
         <div className="w-full max-w-full sm:max-w-4xl mx-auto">
           {/* Welcome Dashboard */}
           <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
 
-          <nav className="bg-white dark:bg-gray-800 p-2 rounded-xl mb-8 shadow-md overflow-x-auto">
-            <div className="flex items-center gap-2 flex-nowrap min-w-max">
+          <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-3 rounded-2xl mb-8 shadow-md border border-border/30 dark:border-gray-700/30 overflow-x-auto">
+            <div className="flex items-center gap-2 flex-nowrap min-w-max"
               <NavItem label="Enviar" isActive={activeScreen === Screen.Calculator} onClick={() => setActiveScreen(Screen.Calculator)} icon={<SendIcon className="h-5 w-5" />} />
-              <NavItem label="Intercambiar" isActive={activeScreen === Screen.Exchange} onClick={() => setActiveScreen(Screen.Exchange)} icon={<ExchangeIcon />} />
-              <NavItem label="Beneficiarios" isActive={activeScreen === Screen.Beneficiaries} onClick={() => setActiveScreen(Screen.Beneficiaries)} icon={<UsersIcon className="h-5 w-5" />} />
-              <NavItem label="Historial" isActive={activeScreen === Screen.History} onClick={() => setActiveScreen(Screen.History)} icon={<HistoryIcon className="h-5 w-5" />} />
-              <NavItem label="Perfil" isActive={activeScreen === Screen.Profile} onClick={() => setActiveScreen(Screen.Profile)} icon={<UserIcon />} />
-              <NavItem label="Info" isActive={activeScreen === Screen.Info} onClick={() => setActiveScreen(Screen.Info)} icon={<InfoIcon />} />
-              {isAdmin(user) && (
-                <NavItem label="Admin" isActive={activeScreen === Screen.Admin} onClick={() => setActiveScreen(Screen.Admin)} icon={<UserIcon />} />
-              )}
-            </div>
-          </nav>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeScreen}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderScreen()}
-            </motion.div>
-          </AnimatePresence>
+            <NavItem label="Intercambiar" isActive={activeScreen === Screen.Exchange} onClick={() => setActiveScreen(Screen.Exchange)} icon={<ExchangeIcon />} />
+            <NavItem label="Beneficiarios" isActive={activeScreen === Screen.Beneficiaries} onClick={() => setActiveScreen(Screen.Beneficiaries)} icon={<UsersIcon className="h-5 w-5" />} />
+            <NavItem label="Historial" isActive={activeScreen === Screen.History} onClick={() => setActiveScreen(Screen.History)} icon={<HistoryIcon className="h-5 w-5" />} />
+            <NavItem label="Perfil" isActive={activeScreen === Screen.Profile} onClick={() => setActiveScreen(Screen.Profile)} icon={<UserIcon />} />
+            <NavItem label="Info" isActive={activeScreen === Screen.Info} onClick={() => setActiveScreen(Screen.Info)} icon={<InfoIcon />} />
+            {isAdmin(user) && (
+              <NavItem label="Admin" isActive={activeScreen === Screen.Admin} onClick={() => setActiveScreen(Screen.Admin)} icon={<UserIcon />} />
+            )}
         </div>
-      </main>
-      <VirtualAssistant />
+      </nav>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeScreen}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+        >
+          {renderScreen()}
+        </motion.div>
+      </AnimatePresence>
+    </div >
+      </main >
+  <VirtualAssistant />
     </div >
   );
 };
