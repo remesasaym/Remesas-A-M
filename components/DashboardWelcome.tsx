@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import type { User } from '../types';
 import { supabase } from '../supabaseClient';
 import { useExchangeRates } from '../contexts/ExchangeRateContext';
-import Card from './common/Card';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 interface DashboardWelcomeProps {
   user: User;
@@ -20,13 +22,12 @@ const getFirstName = (fullName: string): string => {
 };
 
 const SkeletonLoader: React.FC = () => (
-    <div className="animate-pulse">
-        <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-3/5 mb-4"></div>
-        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5 mb-6"></div>
-        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg w-48"></div>
-    </div>
+  <div className="space-y-4">
+    <div className="h-8 bg-gradient-to-r from-bg-secondary via-bg-tertiary to-bg-secondary rounded-lg animate-pulse" style={{ backgroundSize: '200% 100%' }} />
+    <div className="h-6 bg-gradient-to-r from-bg-secondary via-bg-tertiary to-bg-secondary rounded-lg w-3/4 animate-pulse" style={{ backgroundSize: '200% 100%' }} />
+    <div className="h-12 bg-gradient-to-r from-bg-secondary via-bg-tertiary to-bg-secondary rounded-lg w-48 animate-pulse" style={{ backgroundSize: '200% 100%' }} />
+  </div>
 );
-
 
 const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransaction }) => {
   const [summary, setSummary] = useState<SummaryData | null>(null);
@@ -45,21 +46,20 @@ const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransact
           .eq('user_id', user.id);
 
         if (error) throw error;
-        
+
         const transactionCount = transactions.length;
 
         const totalSentUSD = transactions.reduce((total, tx) => {
-            const country = countriesWithLatestRates.find(c => c.currency === tx.currency_sent);
-            const rate = country?.exchangeRateToUSD || 1; // Fallback to 1 if rate not found
-            const amountInUSD = tx.amount_sent / rate;
-            return total + amountInUSD;
+          const country = countriesWithLatestRates.find(c => c.currency === tx.currency_sent);
+          const rate = country?.exchangeRateToUSD || 1;
+          const amountInUSD = tx.amount_sent / rate;
+          return total + amountInUSD;
         }, 0);
 
         setSummary({ transactionCount, totalSentUSD });
 
       } catch (err) {
         console.error("Error fetching transaction summary:", err);
-        // Do not set an error state, just show a generic message or zero values
         setSummary({ transactionCount: 0, totalSentUSD: 0 });
       } finally {
         setLoading(false);
@@ -70,31 +70,69 @@ const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransact
   }, [user.id, countriesWithLatestRates]);
 
   return (
-    <Card className="mb-8 bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 dark:from-slate-800 dark:via-gray-800 dark:to-slate-900">
+    <Card
+      variant="gradient"
+      padding="lg"
+      className="mb-8 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 dark:from-slate-800 dark:via-gray-800 dark:to-slate-900 border-2 border-border/30"
+    >
       {loading ? (
-         <SkeletonLoader />
+        <SkeletonLoader />
       ) : (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                    Hola de nuevo, {getFirstName(user.fullName)} 👋
-                </h2>
-                {summary && summary.transactionCount > 0 ? (
-                     <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        Has enviado un total de <strong className="text-indigo-600 dark:text-indigo-400">{summary.totalSentUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</strong> en <strong className="text-indigo-600 dark:text-indigo-400">{summary.transactionCount} transacciones</strong>.
-                    </p>
-                ) : (
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        ¡Listo para tu primer envío! Realiza una transacción para ver tu resumen aquí.
-                    </p>
-                )}
-            </div>
-             <button
-                onClick={onNewTransaction}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 shadow-lg whitespace-nowrap flex-shrink-0"
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <h2 className="text-3xl font-bold text-text-primary dark:text-white mb-2">
+              Hola de nuevo, {getFirstName(user.fullName)} 👋
+            </h2>
+            {summary && summary.transactionCount > 0 ? (
+              <motion.p
+                className="text-text-secondary dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                Has enviado un total de{' '}
+                <span className="font-bold text-primary dark:text-primary-light">
+                  {summary.totalSentUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                </span>{' '}
+                en{' '}
+                <span className="font-bold text-secondary dark:text-secondary-light">
+                  {summary.transactionCount} {summary.transactionCount === 1 ? 'transacción' : 'transacciones'}
+                </span>
+                .
+              </motion.p>
+            ) : (
+              <motion.p
+                className="text-text-secondary dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                ¡Listo para tu primer envío! Realiza una transacción para ver tu resumen aquí.
+              </motion.p>
+            )}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+          >
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onNewTransaction}
+              className="whitespace-nowrap shadow-primary"
             >
-                Realizar un Nuevo Envío
-            </button>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Nuevo Envío
+            </Button>
+          </motion.div>
         </div>
       )}
     </Card>

@@ -121,9 +121,10 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-bg-primary dark:bg-gray-900">
       <Header user={user} setActiveScreen={setActiveScreen} />
-      <main className="flex-grow p-2 sm:p-4 md:p-8 container mx-auto">
+      {/* Add padding-top to account for fixed header */}
+      <main className="flex-grow pt-24 p-2 sm:p-4 md:p-8 container mx-auto"
         <div className="w-full max-w-full sm:max-w-4xl mx-auto">
           {/* Welcome Dashboard */}
           <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
@@ -155,7 +156,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
         </div>
       </main>
       <VirtualAssistant />
-    </div>
+    </div >
   );
 };
 
