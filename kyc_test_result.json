@@ -1,0 +1,7 @@
+{
+  "steps": [
+    "Autenticando usuario..."
+  ],
+  "result": null,
+  "error": "Error de autenticacion: Invalid login credentials"
+}

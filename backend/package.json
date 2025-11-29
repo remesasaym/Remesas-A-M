@@ -1,0 +1,35 @@
+{
+  "name": "remesas-aym-backend",
+  "version": "1.0.0",
+  "description": "Backend for Remesas A&M application to handle transaction processing.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.45.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
+    "multer": "^2.0.2",
+    "node-fetch": "^2.7.0",
+    "pino": "^8.19.0",
+    "pino-http": "^9.0.0",
+    "resend": "^6.5.2",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "name": "Copy of Remesas A&M",
+    "description": "A modern web application for international remittances and cryptocurrency exchange, providing a seamless and secure experience for users sending and receiving money across Latin America, the US, and Europe.",
+    "requestFramePermissions": [
+        "camera"
+    ],
+    "meta": {
+        "requiredExtensions": {
+            "codexEditor": "0.8.0"
+        }
+    }
+}
