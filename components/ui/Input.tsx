@@ -46,15 +46,15 @@ export const Input = ({
                         props.onBlur?.(e);
                     }}
                     className={`
-            w-full px-4 pt-6 pb-2 bg-white border-2 rounded-2xl
+            w-full px-4 pt-6 pb-2 bg-gray-50 border rounded-2xl
             transition-colors duration-200
             ${leftIcon ? 'pl-12' : ''}
             ${rightIcon ? 'pr-12' : ''}
             ${error
                             ? 'border-error focus:border-error'
-                            : 'border-border focus:border-primary'
+                            : 'border-gray-200 focus:border-primary'
                         }
-            focus:outline-none
+            focus:outline-none focus:bg-white
             disabled:bg-bg-secondary disabled:cursor-not-allowed
             ${className}
           `}

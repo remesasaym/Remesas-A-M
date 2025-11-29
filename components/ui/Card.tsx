@@ -34,13 +34,13 @@ export const Card = ({
             className={`
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
-        rounded-3xl border border-border/50
+        rounded-3xl border border-gray-100
         shadow-sm transition-shadow duration-300
         ${className}
       `}
             whileHover={hover ? {
-                y: -4,
-                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)'
+                y: -2,
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)'
             } : undefined}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             {...props}
