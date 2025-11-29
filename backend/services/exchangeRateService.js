@@ -1,4 +1,12 @@
 
+// backend/services/exchangeRateService.js
+const logger = require("pino")();
+// const fetch = require("node-fetch"); // Native fetch in Node 18+
+
+// API Configuration
+const EXCHANGERATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
+const EXCHANGERATE_API_URL = `https://v6.exchangerate-api.com/v6/${EXCHANGERATE_API_KEY}/latest/USD`;
+
 // ===== VENEZUELA (VES) - DolarAPI Paralelo =====
 async function getVenezuelaRate() {
   try {
@@ -59,18 +67,27 @@ async function getGlobalRates() {
 async function getExchangeRates() {
   logger.info("Fetching exchange rates from multiple sources...");
 
-  // Fetch all rates in parallel for better performance
-  const [vesRate, arsRate, globalRates] = await Promise.all([
-    getVenezuelaRate(),
-    getArgentinaRate(),
-    getGlobalRates(),
-  ]);
+  let vesRate, arsRate, globalRates;
+  try {
+    // Fetch all rates in parallel for better performance
+    [vesRate, arsRate, globalRates] = await Promise.all([
+      getVenezuelaRate(),
+      getArgentinaRate(),
+      getGlobalRates(),
+    ]);
+  } catch (error) {
+    console.error("CRITICAL ERROR IN getExchangeRates:", error);
+    // Fallback values in case of catastrophic failure
+    vesRate = 36.5;
+    arsRate = 1250.00;
+    globalRates = {};
+  }
 
   logger.info(`Live rates fetched:`);
   logger.info(`  VES (Paralelo): ${vesRate}`);
   logger.info(`  ARS (Cripto): ${arsRate}`);
-  logger.info(`  BRL: ${globalRates.BRL || 'N/A'}`);
-  logger.info(`  COP: ${globalRates.COP || 'N/A'}`);
+  logger.info(`  BRL: ${globalRates?.BRL || 'N/A'}`);
+  logger.info(`  COP: ${globalRates?.COP || 'N/A'}`);
 
   return [
     // Norteamérica
@@ -96,7 +113,7 @@ async function getExchangeRates() {
       dialCode: "+1",
       banks: [],
       currency: "CAD",
-      exchangeRateToUSD: globalRates.CAD || 1.37,
+      exchangeRateToUSD: globalRates?.CAD || 1.37,
       region: "North America",
       minimumSendAmount: 25,
     },
@@ -123,7 +140,7 @@ async function getExchangeRates() {
       dialCode: "+591",
       banks: [],
       currency: "BOB",
-      exchangeRateToUSD: globalRates.BOB || 6.91,
+      exchangeRateToUSD: globalRates?.BOB || 6.91,
       region: "LatAm",
       minimumSendAmount: 50,
     },
@@ -133,7 +150,7 @@ async function getExchangeRates() {
       dialCode: "+55",
       banks: [],
       currency: "BRL",
-      exchangeRateToUSD: globalRates.BRL || 5.40,
+      exchangeRateToUSD: globalRates?.BRL || 5.40,
       region: "LatAm",
       minimumSendAmount: 50,
     },
@@ -147,7 +164,7 @@ async function getExchangeRates() {
         { name: "Santander Chile", type: "National" }
       ],
       currency: "CLP",
-      exchangeRateToUSD: globalRates.CLP || 940.00,
+      exchangeRateToUSD: globalRates?.CLP || 940.00,
       region: "LatAm",
       minimumSendAmount: 4000,
     },
@@ -163,7 +180,7 @@ async function getExchangeRates() {
         { name: "Banco de Bogotá", type: "National" }
       ],
       currency: "COP",
-      exchangeRateToUSD: globalRates.COP || 3950.00,
+      exchangeRateToUSD: globalRates?.COP || 3950.00,
       region: "LatAm",
       minimumSendAmount: 25000,
     },
@@ -173,7 +190,7 @@ async function getExchangeRates() {
       dialCode: "+506",
       banks: [],
       currency: "CRC",
-      exchangeRateToUSD: globalRates.CRC || 525.00,
+      exchangeRateToUSD: globalRates?.CRC || 525.00,
       region: "LatAm",
       minimumSendAmount: 5000,
     },
@@ -183,7 +200,7 @@ async function getExchangeRates() {
       dialCode: "+53",
       banks: [],
       currency: "CUP",
-      exchangeRateToUSD: globalRates.CUP || 24.00,
+      exchangeRateToUSD: globalRates?.CUP || 24.00,
       region: "LatAm",
       minimumSendAmount: 500,
     },
@@ -218,7 +235,7 @@ async function getExchangeRates() {
       dialCode: "+502",
       banks: [],
       currency: "GTQ",
-      exchangeRateToUSD: globalRates.GTQ || 7.78,
+      exchangeRateToUSD: globalRates?.GTQ || 7.78,
       region: "LatAm",
       minimumSendAmount: 100,
     },
@@ -228,7 +245,7 @@ async function getExchangeRates() {
       dialCode: "+504",
       banks: [],
       currency: "HNL",
-      exchangeRateToUSD: globalRates.HNL || 24.70,
+      exchangeRateToUSD: globalRates?.HNL || 24.70,
       region: "LatAm",
       minimumSendAmount: 300,
     },
@@ -244,7 +261,7 @@ async function getExchangeRates() {
         { name: "Citibanamex", type: "National" }
       ],
       currency: "MXN",
-      exchangeRateToUSD: globalRates.MXN || 17.15,
+      exchangeRateToUSD: globalRates?.MXN || 17.15,
       region: "LatAm",
       minimumSendAmount: 80,
     },
@@ -254,7 +271,7 @@ async function getExchangeRates() {
       dialCode: "+505",
       banks: [],
       currency: "NIO",
-      exchangeRateToUSD: globalRates.NIO || 36.60,
+      exchangeRateToUSD: globalRates?.NIO || 36.60,
       region: "LatAm",
       minimumSendAmount: 400,
     },
@@ -274,7 +291,7 @@ async function getExchangeRates() {
       dialCode: "+595",
       banks: [],
       currency: "PYG",
-      exchangeRateToUSD: globalRates.PYG || 7250.00,
+      exchangeRateToUSD: globalRates?.PYG || 7250.00,
       region: "LatAm",
       minimumSendAmount: 50000,
     },
@@ -291,7 +308,7 @@ async function getExchangeRates() {
         { name: "Plin", type: "National" }
       ],
       currency: "PEN",
-      exchangeRateToUSD: globalRates.PEN || 3.75,
+      exchangeRateToUSD: globalRates?.PEN || 3.75,
       region: "LatAm",
       minimumSendAmount: 25,
     },
@@ -301,7 +318,7 @@ async function getExchangeRates() {
       dialCode: "+1",
       banks: [],
       currency: "DOP",
-      exchangeRateToUSD: globalRates.DOP || 59.00,
+      exchangeRateToUSD: globalRates?.DOP || 59.00,
       region: "LatAm",
       minimumSendAmount: 500,
     },
@@ -311,7 +328,7 @@ async function getExchangeRates() {
       dialCode: "+598",
       banks: [],
       currency: "UYU",
-      exchangeRateToUSD: globalRates.UYU || 39.50,
+      exchangeRateToUSD: globalRates?.UYU || 39.50,
       region: "LatAm",
       minimumSendAmount: 500,
     },
@@ -339,7 +356,7 @@ async function getExchangeRates() {
       dialCode: "+49",
       banks: [],
       currency: "EUR",
-      exchangeRateToUSD: globalRates.EUR || 0.92,
+      exchangeRateToUSD: globalRates?.EUR || 0.92,
       region: "Europe",
       minimumSendAmount: 20,
     },
@@ -353,7 +370,7 @@ async function getExchangeRates() {
         { name: "Wise", type: "International" }
       ],
       currency: "EUR",
-      exchangeRateToUSD: globalRates.EUR || 0.92,
+      exchangeRateToUSD: globalRates?.EUR || 0.92,
       region: "Europe",
       minimumSendAmount: 20,
     },
@@ -363,7 +380,7 @@ async function getExchangeRates() {
       dialCode: "+33",
       banks: [],
       currency: "EUR",
-      exchangeRateToUSD: globalRates.EUR || 0.92,
+      exchangeRateToUSD: globalRates?.EUR || 0.92,
       region: "Europe",
       minimumSendAmount: 20,
     },
@@ -373,7 +390,7 @@ async function getExchangeRates() {
       dialCode: "+39",
       banks: [],
       currency: "EUR",
-      exchangeRateToUSD: globalRates.EUR || 0.92,
+      exchangeRateToUSD: globalRates?.EUR || 0.92,
       region: "Europe",
       minimumSendAmount: 20,
     },
@@ -383,7 +400,7 @@ async function getExchangeRates() {
       dialCode: "+351",
       banks: [],
       currency: "EUR",
-      exchangeRateToUSD: globalRates.EUR || 0.92,
+      exchangeRateToUSD: globalRates?.EUR || 0.92,
       region: "Europe",
       minimumSendAmount: 20,
     },
@@ -393,7 +410,7 @@ async function getExchangeRates() {
       dialCode: "+44",
       banks: [],
       currency: "GBP",
-      exchangeRateToUSD: globalRates.GBP || 0.79,
+      exchangeRateToUSD: globalRates?.GBP || 0.79,
       region: "Europe",
       minimumSendAmount: 15,
     },
