@@ -15,7 +15,7 @@ export interface ExchangeRates {
 export async function fetchExchangeRates(): Promise<ExchangeRates | null> {
     try {
         const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-        const response = await fetch(`${API_URL}/api/rates`);
+        const response = await fetch(`${API_URL}/api/exchange/rates`);
 
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
