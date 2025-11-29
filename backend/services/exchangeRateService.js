@@ -1,13 +1,4 @@
 
-// backend/services/exchangeRateService.js
-const logger = require("pino")();
-const fetch = require("node-fetch");
-
-// API Configuration
-// API Configuration
-const EXCHANGERATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
-const EXCHANGERATE_API_URL = `https://v6.exchangerate-api.com/v6/${EXCHANGERATE_API_KEY}/latest/USD`;
-
 // ===== VENEZUELA (VES) - DolarAPI Paralelo =====
 async function getVenezuelaRate() {
   try {
