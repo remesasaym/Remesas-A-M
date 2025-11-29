@@ -133,33 +133,33 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
           <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
 
           <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-3 rounded-2xl mb-8 shadow-md border border-border/30 dark:border-gray-700/30 overflow-x-auto">
-            <div className="flex items-center gap-2 flex-nowrap min-w-max"
+            <div className="flex items-center gap-2 flex-nowrap min-w-max">
               <NavItem label="Enviar" isActive={activeScreen === Screen.Calculator} onClick={() => setActiveScreen(Screen.Calculator)} icon={<SendIcon className="h-5 w-5" />} />
-            <NavItem label="Intercambiar" isActive={activeScreen === Screen.Exchange} onClick={() => setActiveScreen(Screen.Exchange)} icon={<ExchangeIcon />} />
-            <NavItem label="Beneficiarios" isActive={activeScreen === Screen.Beneficiaries} onClick={() => setActiveScreen(Screen.Beneficiaries)} icon={<UsersIcon className="h-5 w-5" />} />
-            <NavItem label="Historial" isActive={activeScreen === Screen.History} onClick={() => setActiveScreen(Screen.History)} icon={<HistoryIcon className="h-5 w-5" />} />
-            <NavItem label="Perfil" isActive={activeScreen === Screen.Profile} onClick={() => setActiveScreen(Screen.Profile)} icon={<UserIcon />} />
-            <NavItem label="Info" isActive={activeScreen === Screen.Info} onClick={() => setActiveScreen(Screen.Info)} icon={<InfoIcon />} />
-            {isAdmin(user) && (
-              <NavItem label="Admin" isActive={activeScreen === Screen.Admin} onClick={() => setActiveScreen(Screen.Admin)} icon={<UserIcon />} />
-            )}
+              <NavItem label="Intercambiar" isActive={activeScreen === Screen.Exchange} onClick={() => setActiveScreen(Screen.Exchange)} icon={<ExchangeIcon />} />
+              <NavItem label="Beneficiarios" isActive={activeScreen === Screen.Beneficiaries} onClick={() => setActiveScreen(Screen.Beneficiaries)} icon={<UsersIcon className="h-5 w-5" />} />
+              <NavItem label="Historial" isActive={activeScreen === Screen.History} onClick={() => setActiveScreen(Screen.History)} icon={<HistoryIcon className="h-5 w-5" />} />
+              <NavItem label="Perfil" isActive={activeScreen === Screen.Profile} onClick={() => setActiveScreen(Screen.Profile)} icon={<UserIcon />} />
+              <NavItem label="Info" isActive={activeScreen === Screen.Info} onClick={() => setActiveScreen(Screen.Info)} icon={<InfoIcon />} />
+              {isAdmin(user) && (
+                <NavItem label="Admin" isActive={activeScreen === Screen.Admin} onClick={() => setActiveScreen(Screen.Admin)} icon={<UserIcon />} />
+              )}
+            </div>
+          </nav>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeScreen}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderScreen()}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </nav>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeScreen}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-        >
-          {renderScreen()}
-        </motion.div>
-      </AnimatePresence>
-    </div >
-      </main >
-  <VirtualAssistant />
-    </div >
+      </main>
+      <VirtualAssistant />
+    </div>
   );
 };
 
