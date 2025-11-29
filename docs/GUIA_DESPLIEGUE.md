@@ -41,21 +41,6 @@ Render alojará tu servidor (Node.js) y base de datos.
     * **Runtime:** Node
     * **Build Command:** `npm install`
     * **Start Command:** `npm start`
-5. **Variables de Entorno (Environment Variables):**
-    Haz clic en "Advanced" o "Environment" y agrega:
-    * `SUPABASE_URL`: (Tu URL de Supabase)
-    * `SUPABASE_SERVICE_ROLE_KEY`: (Tu Key de Supabase)
-    * `GEMINI_API_KEY`: (Tu API Key de Google)
-    * `RESEND_API_KEY`: (Tu API Key de Resend)
-    * `SENDER_EMAIL`: (Tu email de Resend)
-    * `ENCRYPTION_KEY`: (Tu clave de encriptación del .env)
-    * `ALLOWED_ORIGINS`: `*` (Para empezar)
-6. Haz clic en **Create Web Service**.
-7. **Espera:** Render tardará unos minutos. Al final te dará una URL (ej. `https://remesas-backend.onrender.com`). **Cópiala.**
-
----
-
-## 3. Desplegar Frontend (Vercel)
 
 Vercel alojará tu página web (React).
 

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: remesas-backend
+    env: node
+    root: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SENDER_EMAIL
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: EXCHANGE_RATE_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "*"
