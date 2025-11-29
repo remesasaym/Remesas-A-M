@@ -226,7 +226,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
       return (
         <div className="space-y-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
               {user.fullName?.charAt(0) || user.email.charAt(0).toUpperCase()}
             </div>
             <div>

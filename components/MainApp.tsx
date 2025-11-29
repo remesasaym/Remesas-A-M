@@ -33,12 +33,12 @@ const NavItem: React.FC<{
 }> = ({ label, isActive, onClick, icon }) => (
   <motion.button
     onClick={onClick}
-    className={`flex-shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${isActive
-      ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-primary'
-      : 'bg-bg-secondary hover:bg-bg-tertiary text-text-secondary hover:text-text-primary dark:bg-gray-700/50 dark:hover:bg-gray-700 dark:text-gray-300 dark:hover:text-white'
+    className={`flex-shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${isActive
+      ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }`}
-    whileHover={{ scale: isActive ? 1 : 1.05, y: isActive ? 0 : -2 }}
-    whileTap={{ scale: 0.95 }}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
   >
     {icon}
@@ -132,7 +132,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
           {/* Welcome Dashboard */}
           <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
 
-          <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-3 rounded-2xl mb-8 shadow-md border border-border/30 dark:border-gray-700/30 overflow-x-auto">
+          <nav className="bg-white dark:bg-gray-800 p-3 rounded-2xl mb-8 shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
             <div className="flex items-center gap-2 flex-nowrap min-w-max">
               <NavItem label="Enviar" isActive={activeScreen === Screen.Calculator} onClick={() => setActiveScreen(Screen.Calculator)} icon={<SendIcon className="h-5 w-5" />} />
               <NavItem label="Intercambiar" isActive={activeScreen === Screen.Exchange} onClick={() => setActiveScreen(Screen.Exchange)} icon={<ExchangeIcon />} />
