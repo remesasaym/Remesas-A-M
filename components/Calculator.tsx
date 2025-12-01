@@ -582,9 +582,9 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
                   variant="pill"
                 />
                 <div className="w-full flex flex-col">
-                  <label className="text-slate-400 text-sm font-bold uppercase tracking-wider ml-1 mb-1">
+                  <span className="block text-slate-400 text-sm font-bold uppercase tracking-wider ml-1 mb-1">
                     Ellos reciben
-                  </label>
+                  </span>
                   <div className="text-4xl font-extrabold text-accent text-right px-0 py-2">
                     {receivedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>

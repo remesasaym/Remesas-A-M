@@ -228,9 +228,9 @@ const AuthScreen: React.FC = () => {
                 <span>{view === 'login' ? 'Iniciando...' : 'Creando...'}</span>
               </>
             ) : view === 'login' ? (
-              'Iniciar Sesión'
+              <span>Iniciar Sesión</span>
             ) : (
-              'Crear Cuenta'
+              <span>Crear Cuenta</span>
             )}
           </button>
         </div>
@@ -269,16 +269,16 @@ const AuthScreen: React.FC = () => {
         {renderFormContent()}
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          {view === 'login' && '¿No tienes cuenta?'}
-          {view === 'register' && '¿Ya tienes una cuenta?'}
-          {view === 'forgotPassword' && '¿Recordaste tu contraseña?'}
+          {view === 'login' && <span>¿No tienes cuenta?</span>}
+          {view === 'register' && <span>¿Ya tienes una cuenta?</span>}
+          {view === 'forgotPassword' && <span>¿Recordaste tu contraseña?</span>}
           <button
             onClick={() => switchView(view === 'login' ? 'register' : 'login')}
             className="ml-1 font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
-            {view === 'login' && 'Regístrate'}
-            {view === 'register' && 'Inicia Sesión'}
-            {view === 'forgotPassword' && 'Volver a Iniciar Sesión'}
+            {view === 'login' && <span>Regístrate</span>}
+            {view === 'register' && <span>Inicia Sesión</span>}
+            {view === 'forgotPassword' && <span>Volver a Iniciar Sesión</span>}
           </button>
         </p>
       </Card>
