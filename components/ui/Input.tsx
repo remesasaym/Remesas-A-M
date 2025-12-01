@@ -1,6 +1,6 @@
 // components/ui/Input.tsx
 import { motion } from 'framer-motion';
-import { InputHTMLAttributes, useState, ReactNode } from 'react';
+import { InputHTMLAttributes, useState, ReactNode, useId } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label: string;
@@ -20,9 +20,12 @@ export const Input = ({
     value,
     variant = 'default',
     className = '',
+    id,
     ...props
 }: InputProps) => {
     const [isFocused, setIsFocused] = useState(false);
+    const generatedId = useId();
+    const inputId = id || generatedId;
     const hasValue = value !== undefined && value !== '';
 
     // Variant styles
@@ -49,13 +52,14 @@ export const Input = ({
         return (
             <div className={`w-full ${className}`}>
                 <div className="flex flex-col">
-                    <label className="text-slate-400 text-sm font-bold uppercase tracking-wider ml-1 mb-1">
+                    <label htmlFor={inputId} className="text-slate-400 text-sm font-bold uppercase tracking-wider ml-1 mb-1">
                         {label}
                     </label>
                     <div className="flex items-center gap-4">
                         {leftIcon}
                         <input
                             {...props}
+                            id={inputId}
                             value={value}
                             className={`
                                 w-full outline-none text-slate-800 dark:text-white
@@ -88,6 +92,7 @@ export const Input = ({
                 {/* Input */}
                 <motion.input
                     {...props}
+                    id={inputId}
                     value={value}
                     onFocus={(e) => {
                         setIsFocused(true);
@@ -121,6 +126,7 @@ export const Input = ({
                 {/* Floating Label for Default Variant */}
                 {variant === 'default' && (
                     <motion.label
+                        htmlFor={inputId}
                         className={`
                             absolute pointer-events-none transition-colors
                             ${leftIcon ? 'left-12' : 'left-4'}

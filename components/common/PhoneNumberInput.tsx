@@ -10,15 +10,16 @@ interface PhoneNumberInputProps {
   onChange: (value: string) => void;
   className?: string;
   required?: boolean;
+  id?: string;
 }
 
-const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, className = '', required = false }) => {
+const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, className = '', required = false, id }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Memoize sorted countries to avoid re-sorting on every render
-  const sortedCountries = useMemo(() => 
-    [...COUNTRIES].sort((a, b) => b.dialCode.length - a.dialCode.length), 
+  const sortedCountries = useMemo(() =>
+    [...COUNTRIES].sort((a, b) => b.dialCode.length - a.dialCode.length),
     []
   );
 
@@ -38,11 +39,11 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, cl
     return { countryCode: 'US', nationalNumber: value.replace(/\D/g, '') };
   }, [value, sortedCountries]);
 
-  const selectedCountry = useMemo(() => 
-    COUNTRIES.find(c => c.code === countryCode) || COUNTRIES.find(c => c.code === 'US')!, 
+  const selectedCountry = useMemo(() =>
+    COUNTRIES.find(c => c.code === countryCode) || COUNTRIES.find(c => c.code === 'US')!,
     [countryCode]
   );
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -108,6 +109,7 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, cl
         </AnimatePresence>
       </div>
       <input
+        id={id}
         type="tel"
         value={nationalNumber}
         onChange={handleNumberChange}

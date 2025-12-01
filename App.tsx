@@ -8,6 +8,7 @@ import { supabase } from './supabaseClient';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import LogoIcon from './components/icons/LogoIcon';
 import { motion } from 'framer-motion';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -177,13 +178,15 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <ExchangeRateProvider>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-          {user ? (
-            <MainApp user={user} onProfileUpdate={handleProfileUpdate} />
-          ) : (
-            <AuthScreen />
-          )}
-        </div>
+        <ErrorBoundary>
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            {user ? (
+              <MainApp user={user} onProfileUpdate={handleProfileUpdate} />
+            ) : (
+              <AuthScreen />
+            )}
+          </div>
+        </ErrorBoundary>
       </ExchangeRateProvider>
     </ThemeProvider>
   );

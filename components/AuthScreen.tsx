@@ -81,7 +81,7 @@ const AuthScreen: React.FC = () => {
   };
 
   const renderSubtitle = () => {
-     switch (view) {
+    switch (view) {
       case 'forgotPassword': return 'Te enviaremos un enlace para que recuperes tu cuenta.';
       default: return 'Tu portal de finanzas globales.';
     }
@@ -121,31 +121,32 @@ const AuthScreen: React.FC = () => {
     return (
       <form onSubmit={handleAuth} className="space-y-6">
         {view === 'register' && (
-           <>
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-              <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                      Número de Teléfono <span className="text-gray-400">(Opcional)</span>
-                  </label>
-                  <PhoneNumberInput 
-                    value={phone} 
-                    onChange={setPhone}
-                  />
-              </div>
-           </>
+          <>
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                Nombre Completo
+              </label>
+              <input
+                type="text"
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                Número de Teléfono <span className="text-gray-400">(Opcional)</span>
+              </label>
+              <PhoneNumberInput
+                id="phone"
+                value={phone}
+                onChange={setPhone}
+              />
+            </div>
+          </>
         )}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -162,21 +163,21 @@ const AuthScreen: React.FC = () => {
           />
         </div>
         <div>
-           <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <label htmlFor="password" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
               Contraseña
             </label>
-             {view === 'login' && (
-                <div className="text-sm">
-                  <button
-                    type="button"
-                    onClick={() => switchView('forgotPassword')}
-                    className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
-              )}
+            {view === 'login' && (
+              <div className="text-sm">
+                <button
+                  type="button"
+                  onClick={() => switchView('forgotPassword')}
+                  className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            )}
           </div>
           <input
             type="password"
@@ -234,10 +235,10 @@ const AuthScreen: React.FC = () => {
             <motion.div
               initial={{ width: '0%' }}
               animate={{ width: ['0%', '75%', '0%'] }}
-              transition={{ 
-                duration: 2, 
-                repeat: Infinity, 
-                ease: 'linear' as const 
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: 'linear' as const
               }}
               className="h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full mt-2"
             />
@@ -259,14 +260,14 @@ const AuthScreen: React.FC = () => {
 
         {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
         {authMessage && <p className="text-green-600 dark:text-green-400 text-sm text-center mb-4">{authMessage}</p>}
-        
+
         {renderFormContent()}
-        
+
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           {view === 'login' && '¿No tienes cuenta?'}
           {view === 'register' && '¿Ya tienes una cuenta?'}
           {view === 'forgotPassword' && '¿Recordaste tu contraseña?'}
-          <button 
+          <button
             onClick={() => switchView(view === 'login' ? 'register' : 'login')}
             className="ml-1 font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
           >
