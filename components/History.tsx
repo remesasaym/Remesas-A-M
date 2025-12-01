@@ -62,6 +62,8 @@ const History: React.FC<HistoryProps> = ({ user }) => {
         if (!session) throw new Error('No hay sesión activa');
 
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        console.log('History: Fetching from', API_URL);
+        console.log('History: Token present?', !!session.access_token);
         const response = await fetch(`${API_URL}/api/remittances/history?userId=${user.id}`, {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         });
