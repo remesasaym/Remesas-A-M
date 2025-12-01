@@ -11,16 +11,20 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
+    // 1. Check local storage first
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light' || savedTheme === 'dark') {
       return savedTheme;
     }
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      return 'light';
+    // 2. Check system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
     }
-    return 'dark';
+    // 3. Default to light
+    return 'light';
   });
 
+  // Apply theme class to HTML element
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === 'dark') {
@@ -28,11 +32,34 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('theme', theme);
+    // Note: We DO NOT save to localStorage here anymore.
+    // We only save when the user explicitly toggles the theme.
   }, [theme]);
 
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      // Only update if user hasn't manually set a preference
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    // Modern browsers
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Cleanup
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    setTheme(prevTheme => {
+      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme); // Save user preference explicitly
+      return newTheme;
+    });
   };
 
   return (
