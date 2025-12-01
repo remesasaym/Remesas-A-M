@@ -146,6 +146,7 @@ const AuthScreen: React.FC = () => {
                 id="phone"
                 value={phone}
                 onChange={setPhone}
+                autoComplete="tel"
               />
             </div>
           </>
