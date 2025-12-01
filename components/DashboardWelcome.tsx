@@ -16,7 +16,13 @@ const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransact
         const fetchStats = async () => {
             try {
                 const { data: { session } } = await import('../supabaseClient').then(m => m.supabase.auth.getSession());
-                if (!session) return;
+                if (!session) {
+                    console.warn('DashboardWelcome: No active session found.');
+                    return;
+                }
+
+                console.log('DashboardWelcome: Fetching stats for user:', user.id);
+                // console.log('DashboardWelcome: Token:', session.access_token.substring(0, 10) + '...'); // Debug only
 
                 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
                 const response = await fetch(`${API_URL}/api/remittances/history?userId=${user.id}`, {
