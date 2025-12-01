@@ -331,6 +331,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleInputChange}
+                autoComplete="name"
                 required
               />
 
@@ -342,6 +343,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                     value={formData.country}
                     onChange={handleInputChange}
                     required
+                    autoComplete="country-name"
                     className="w-full px-4 py-3 bg-white border-2 border-border rounded-2xl appearance-none focus:outline-none focus:border-primary transition-colors"
                   >
                     {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
@@ -366,6 +368,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
+                autoComplete="street-address"
                 required
               />
 
@@ -375,6 +378,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                   value={formData.phone}
                   onChange={handlePhoneInputChange}
                   className="bg-white border-2 border-border rounded-2xl focus-within:border-primary transition-colors"
+                  autoComplete="tel"
                   required
                 />
               </div>

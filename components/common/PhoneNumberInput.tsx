@@ -11,9 +11,10 @@ interface PhoneNumberInputProps {
   className?: string;
   required?: boolean;
   id?: string;
+  autoComplete?: string;
 }
 
-const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, className = '', required = false, id }) => {
+const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, className = '', required = false, id, autoComplete }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -111,6 +112,7 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, cl
       <input
         id={id}
         type="tel"
+        autoComplete={autoComplete}
         value={nationalNumber}
         onChange={handleNumberChange}
         className="w-full bg-transparent py-3 px-3 text-gray-800 dark:text-white focus:outline-none"

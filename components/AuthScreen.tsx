@@ -102,6 +102,7 @@ const AuthScreen: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="tu@email.com"
+              autoComplete="email"
               required
             />
           </div>
@@ -133,6 +134,7 @@ const AuthScreen: React.FC = () => {
                 onChange={(e) => setFullName(e.target.value)}
                 className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="John Doe"
+                autoComplete="name"
                 required
               />
             </div>
@@ -159,6 +161,7 @@ const AuthScreen: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="tu@email.com"
+            autoComplete="email"
             required
           />
         </div>
@@ -186,6 +189,7 @@ const AuthScreen: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="••••••••"
+            autoComplete={view === 'register' ? 'new-password' : 'current-password'}
             required
           />
         </div>
