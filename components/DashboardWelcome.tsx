@@ -8,6 +8,40 @@ interface DashboardWelcomeProps {
 }
 
 const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransaction }) => {
+    const [totalSent, setTotalSent] = React.useState(0);
+    const [completedCount, setCompletedCount] = React.useState(0);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data: { session } } = await import('../supabaseClient').then(m => m.supabase.auth.getSession());
+                if (!session) return;
+
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                const response = await fetch(`${API_URL}/api/remittances/history?userId=${user.id}`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        const completed = data.filter((tx: any) => tx.status === 'COMPLETADO');
+                        const total = completed.reduce((sum: number, tx: any) => sum + (Number(tx.amount_sent) || 0), 0);
+                        setTotalSent(total);
+                        setCompletedCount(completed.length);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, [user.id]);
+
     return (
         <div className="space-y-8 animate-fade-in-up mb-8">
             {/* Header */}
@@ -39,12 +73,16 @@ const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransact
                         <span className="text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-sm">Total Enviado</span>
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-5xl sm:text-6xl font-extrabold text-slate-800 dark:text-white tracking-tighter">$0.00</span>
+                        <span className="text-5xl sm:text-6xl font-extrabold text-slate-800 dark:text-white tracking-tighter">
+                            ${totalSent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                         <span className="text-xl text-slate-400 font-bold">USD</span>
                     </div>
                     <div className="mt-6 flex items-center gap-2 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 w-fit px-4 py-2 rounded-full">
-                        <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                        <span className="text-sm font-medium">0 transacciones exitosas</span>
+                        <span className={`w-2 h-2 rounded-full ${loading ? 'bg-gray-400' : 'bg-accent animate-pulse'}`} />
+                        <span className="text-sm font-medium">
+                            {loading ? 'Cargando...' : `${completedCount} transacciones exitosas`}
+                        </span>
                     </div>
                 </div>
             </div>
