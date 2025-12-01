@@ -14,7 +14,7 @@ interface PhoneNumberInputProps {
   autoComplete?: string;
 }
 
-const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, className = '', required = false, id, autoComplete = 'tel' }) => {
+const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({ value, onChange, className = '', required = false, id, autoComplete }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

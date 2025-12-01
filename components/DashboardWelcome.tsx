@@ -16,15 +16,7 @@ const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransact
         const fetchStats = async () => {
             try {
                 const { data: { session } } = await import('../supabaseClient').then(m => m.supabase.auth.getSession());
-                if (!session) {
-                    console.warn('DashboardWelcome: No active session found.');
-                    return;
-                }
-
-                console.log('DashboardWelcome: Fetching stats for user:', user.id);
-                // Access internal supabaseUrl if available, or just log a message to check env vars
-                // @ts-ignore - supabaseUrl might be protected but often accessible for debug
-                const sbUrl = import('../supabaseClient').then(m => console.log('Current Supabase URL:', m.supabase['supabaseUrl'] || 'Unknown'));
+                if (!session) return;
 
                 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
                 const response = await fetch(`${API_URL}/api/remittances/history?userId=${user.id}`, {
