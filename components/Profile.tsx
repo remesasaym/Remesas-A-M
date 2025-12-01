@@ -325,7 +325,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               </div>
             </div>
 
-            <Card variant="default" padding="lg" className="space-y-6">
+            <Card variant="default" padding="lg" className="space-y-6 rounded-[2rem] shadow-lg shadow-slate-200/50 border-slate-100">
               <Input
                 label="Nombre Completo"
                 name="fullName"
@@ -382,7 +382,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full mt-4"
+                className="w-full mt-4 py-4 text-lg shadow-xl shadow-primary/30"
                 disabled={!formData.documentId || !formData.address || !formData.fullName || !formData.phone}
               >
                 Continuar
@@ -441,7 +441,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <Button
                 onClick={handleFinalSubmit}
                 size="lg"
-                className="w-full mt-4"
+                className="w-full mt-4 py-4 text-lg shadow-xl shadow-primary/30"
                 disabled={!docUrls.id || !docUrls.address || !docUrls.selfie || isVerificationDisabled}
               >
                 Enviar Verificación

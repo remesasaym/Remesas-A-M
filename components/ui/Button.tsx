@@ -19,6 +19,7 @@ export const Button = ({
     leftIcon,
     rightIcon,
     disabled,
+    className,
     ...props
 }: ButtonProps) => {
     const baseStyles = "inline-flex items-center justify-center gap-2 font-bold transition-all transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
@@ -37,7 +38,7 @@ export const Button = ({
 
     return (
         <motion.button
-            className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]}`}
+            className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className || ''}`}
             whileHover={{ scale: disabled ? 1 : 1.02 }}
             whileTap={{ scale: disabled ? 1 : 0.98 }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
