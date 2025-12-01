@@ -147,7 +147,7 @@ const History: React.FC<HistoryProps> = ({ user }) => {
           </div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Sin Transacciones</h3>
           <p className="text-sm mb-6 max-w-xs mx-auto">Aún no has realizado ningún envío. ¡Empieza hoy mismo!</p>
-          <Button variant="primary" className="shadow-lg shadow-primary/20">Empezar ahora</Button>
+          <Button variant="primary" className="shadow-xl shadow-primary/30">Empezar ahora</Button>
         </div>
       );
     }

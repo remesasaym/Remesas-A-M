@@ -102,7 +102,7 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
           </div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-white">Sin Beneficiarios</h3>
           <p className="mt-2 text-sm max-w-xs mx-auto">Añade tu primer beneficiario para agilizar tus envíos.</p>
-          <Button onClick={handleAdd} className="mt-6 shadow-lg shadow-primary/20">
+          <Button onClick={handleAdd} className="mt-6 shadow-xl shadow-primary/30">
             Añadir Beneficiario
           </Button>
         </div>
@@ -151,7 +151,7 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
 
                 <Button
                   onClick={() => onSelectBeneficiary(ben)}
-                  className="w-full shadow-md shadow-primary/10 group-hover:shadow-primary/20"
+                  className="w-full shadow-lg shadow-primary/20 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all"
                 >
                   <SendIcon className="w-4 h-4 mr-2" />
                   Enviar Dinero
@@ -184,7 +184,7 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
             <p className="text-slate-500 font-medium">Gestiona tus destinatarios frecuentes</p>
           </div>
           {beneficiaries.length > 0 && (
-            <Button onClick={handleAdd} className="shadow-lg shadow-primary/20">
+            <Button onClick={handleAdd} className="shadow-xl shadow-primary/30">
               <PlusCircleIcon className="w-5 h-5 mr-2" />
               Nuevo Beneficiario
             </Button>
