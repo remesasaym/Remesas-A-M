@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { User, Beneficiary } from '../types';
-import { Screen } from '../types';
-import Header from './Header';
+import { User, Beneficiary, Screen } from '../types';
+import { Navigation } from './Navigation'; // New Navigation Component
 import Calculator, { type CalculatorRef } from './Calculator';
 import Exchange from './Exchange';
 import Profile from './Profile';
@@ -10,60 +9,13 @@ import History from './History';
 import Beneficiaries from './Beneficiaries';
 import VirtualAssistant from './VirtualAssistant';
 import AdminPanel from './admin/AdminPanel';
-import { isAdmin } from '../services/adminService';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
-import HistoryIcon from './icons/HistoryIcon';
 import DashboardWelcome from './DashboardWelcome';
-import UsersIcon from './icons/UsersIcon';
-import SendIcon from './icons/SendIcon';
 import { AnimatePresence, motion } from 'framer-motion';
-
 
 interface MainAppProps {
   user: User;
-  // FIX: Changed Omit<> to Pick<> to match the updated handleProfileUpdate signature in App.tsx.
   onProfileUpdate: (updates: Partial<Pick<User, 'fullName' | 'isVerified' | 'phone'>>) => Promise<void>;
 }
-
-const NavItem: React.FC<{
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-}> = ({ label, isActive, onClick, icon }) => (
-  <motion.button
-    onClick={onClick}
-    className={`flex-shrink-0 flex flex-col sm:flex-row items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${isActive
-      ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-      }`}
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-  >
-    {icon}
-    <span className="hidden sm:inline">{label}</span>
-  </motion.button>
-);
-
-// FIX: Moved icon components outside MainApp to prevent re-creation on every render.
-const ExchangeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-  </svg>
-);
-
-const InfoIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-  </svg>
-);
 
 const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
   const [activeScreen, setActiveScreen] = useState<Screen>(Screen.Calculator);
@@ -88,10 +40,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
     setBeneficiaryPrefill(null);
   };
 
-
   const handleNewTransactionClick = () => {
-    // If we're already on the calculator screen, reset it immediately.
-    // Otherwise, set a flag to reset it once the screen switches.
     if (activeScreen === Screen.Calculator) {
       calculatorRef.current?.resetCalculator();
     } else {
@@ -100,7 +49,6 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
     }
     clearPrefill();
   };
-
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -124,40 +72,38 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-primary dark:bg-gray-900">
-      <Header user={user} setActiveScreen={setActiveScreen} />
-      {/* Add padding-top to account for fixed header */}
-      <main className="flex-grow pt-24 p-2 sm:p-4 md:p-8 container mx-auto">
-        <div className="w-full max-w-full sm:max-w-4xl mx-auto">
-          {/* Welcome Dashboard */}
-          <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
+    <div className="min-h-screen bg-bg-primary dark:bg-gray-900 text-text-primary pb-24 md:pb-0 md:pl-24 relative overflow-hidden transition-colors duration-300">
 
-          <nav className="bg-white dark:bg-gray-800 p-3 rounded-2xl mb-8 shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
-            <div className="flex items-center gap-2 flex-nowrap min-w-max">
-              <NavItem label="Enviar" isActive={activeScreen === Screen.Calculator} onClick={() => setActiveScreen(Screen.Calculator)} icon={<SendIcon className="h-5 w-5" />} />
-              <NavItem label="Intercambiar" isActive={activeScreen === Screen.Exchange} onClick={() => setActiveScreen(Screen.Exchange)} icon={<ExchangeIcon />} />
-              <NavItem label="Beneficiarios" isActive={activeScreen === Screen.Beneficiaries} onClick={() => setActiveScreen(Screen.Beneficiaries)} icon={<UsersIcon className="h-5 w-5" />} />
-              <NavItem label="Historial" isActive={activeScreen === Screen.History} onClick={() => setActiveScreen(Screen.History)} icon={<HistoryIcon className="h-5 w-5" />} />
-              <NavItem label="Perfil" isActive={activeScreen === Screen.Profile} onClick={() => setActiveScreen(Screen.Profile)} icon={<UserIcon />} />
-              <NavItem label="Info" isActive={activeScreen === Screen.Info} onClick={() => setActiveScreen(Screen.Info)} icon={<InfoIcon />} />
-              {isAdmin(user) && (
-                <NavItem label="Admin" isActive={activeScreen === Screen.Admin} onClick={() => setActiveScreen(Screen.Admin)} icon={<UserIcon />} />
-              )}
-            </div>
-          </nav>
+      {/* Decorative Background Blobs */}
+      <div className="fixed top-[-10%] right-[-5%] w-96 h-96 bg-secondary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="fixed bottom-[-10%] left-[-5%] w-96 h-96 bg-warning/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+
+      {/* Navigation (Sidebar for Desktop, Bottom Bar for Mobile) */}
+      <Navigation activeScreen={activeScreen} setActiveScreen={setActiveScreen} user={user} />
+
+      {/* Main Content Area */}
+      <main className="max-w-4xl mx-auto p-6 md:p-12">
+        <div className="w-full">
+
+          {/* Show Welcome only on Calculator screen (Home) */}
+          {activeScreen === Screen.Calculator && !beneficiaryPrefill && (
+            <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
+          )}
+
           <AnimatePresence mode="wait">
             <motion.div
               key={activeScreen}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               {renderScreen()}
             </motion.div>
           </AnimatePresence>
         </div>
       </main>
+
       <VirtualAssistant />
     </div>
   );

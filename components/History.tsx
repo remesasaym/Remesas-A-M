@@ -119,7 +119,7 @@ const History: React.FC<HistoryProps> = ({ user }) => {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-text-secondary">
+        <div className="flex flex-col items-center justify-center p-12 text-slate-400">
           <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
           <p>Cargando historial...</p>
         </div>
@@ -128,7 +128,7 @@ const History: React.FC<HistoryProps> = ({ user }) => {
 
     if (error) {
       return (
-        <div className="p-8 text-center bg-error/5 rounded-xl border border-error/20">
+        <div className="p-8 text-center bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
           <p className="text-error font-medium">{error}</p>
           <Button variant="ghost" className="mt-4 text-error hover:bg-error/10" onClick={() => window.location.reload()}>
             Reintentar
@@ -139,34 +139,34 @@ const History: React.FC<HistoryProps> = ({ user }) => {
 
     if (transactions.length === 0) {
       return (
-        <div className="text-center p-12 text-text-secondary">
-          <div className="w-16 h-16 bg-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="text-center p-12 text-slate-400">
+          <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-text-primary mb-2">Sin Transacciones</h3>
-          <p className="text-sm mb-6">Aún no has realizado ningún envío.</p>
-          <Button variant="primary">Empezar ahora</Button>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Sin Transacciones</h3>
+          <p className="text-sm mb-6 max-w-xs mx-auto">Aún no has realizado ningún envío. ¡Empieza hoy mismo!</p>
+          <Button variant="primary" className="shadow-lg shadow-primary/20">Empezar ahora</Button>
         </div>
       );
     }
 
     return (
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-border">
+        <div className="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-bg-secondary border-b border-border">
+              <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
                 <tr>
                   <SortableHeader label="Fecha" sortKey="created_at" currentSortKey={sortKey} currentDirection={sortDirection} onSort={handleSortAndResetPage} />
                   <SortableHeader label="Destinatario" sortKey="recipient_name" currentSortKey={sortKey} currentDirection={sortDirection} onSort={handleSortAndResetPage} />
                   <SortableHeader label="Monto" sortKey="amount_sent" currentSortKey={sortKey} currentDirection={sortDirection} onSort={handleSortAndResetPage} className="hidden sm:table-cell" />
-                  <th scope="col" className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider text-text-secondary">Ruta</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-400">Ruta</th>
                   <SortableHeader label="Estado" sortKey="status" currentSortKey={sortKey} currentDirection={sortDirection} onSort={handleSortAndResetPage} />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border bg-white dark:bg-gray-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {paginatedTransactions.map((tx, index) => (
                   <TransactionRow
                     key={tx.id}
@@ -193,19 +193,15 @@ const History: React.FC<HistoryProps> = ({ user }) => {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-text-primary">Historial</h2>
-            <p className="text-text-secondary">Tus envíos recientes</p>
+            <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">Historial</h2>
+            <p className="text-slate-500 font-medium">Tus envíos recientes</p>
           </div>
         </div>
 
-        <Card variant="default" padding="none" className="overflow-hidden">
-          <div className="p-6">
-            {renderContent()}
-          </div>
-        </Card>
+        {renderContent()}
 
         <AnimatePresence>
           {selectedTransaction && (
@@ -224,14 +220,15 @@ const TransactionRow: React.FC<{ transaction: Transaction; onClick: () => void; 
   const fromCountry = COUNTRIES.find(c => c.code === transaction.from_country_code);
   const toCountry = COUNTRIES.find(c => c.code === transaction.to_country_code);
 
+  // Stitch color mapping for statuses
   const statusStyles = {
-    'COMPLETADO': 'bg-success/10 text-success-dark border-success/20',
-    'RECHAZADO': 'bg-error/10 text-error border-error/20',
-    'VERIFICADO': 'bg-accent/10 text-accent-dark border-accent/20',
-    'PENDIENTE': 'bg-warning/10 text-warning-dark border-warning/20',
+    'COMPLETADO': 'bg-teal-50 text-teal-600 border-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-900/30',
+    'RECHAZADO': 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30',
+    'VERIFICADO': 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/30',
+    'PENDIENTE': 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30',
   };
 
-  const statusStyle = statusStyles[transaction.status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-800';
+  const statusStyle = statusStyles[transaction.status as keyof typeof statusStyles] || 'bg-slate-100 text-slate-600 border-slate-200';
 
   return (
     <motion.tr
@@ -239,42 +236,42 @@ const TransactionRow: React.FC<{ transaction: Transaction; onClick: () => void; 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       onClick={onClick}
-      className="group hover:bg-bg-secondary/50 cursor-pointer transition-colors"
+      className="group hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors"
     >
-      <td className="px-4 py-4 text-text-secondary whitespace-nowrap">
-        <div className="font-medium text-text-primary">
+      <td className="px-4 py-4 whitespace-nowrap">
+        <div className="font-bold text-slate-700 dark:text-slate-200">
           {new Date(transaction.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
         </div>
-        <div className="text-xs opacity-70">
+        <div className="text-xs text-slate-400 font-medium">
           {new Date(transaction.created_at).getFullYear()}
         </div>
       </td>
 
       <td className="px-4 py-4">
-        <div className="font-medium text-text-primary">{transaction.recipient_name}</div>
-        <div className="text-xs text-text-secondary truncate max-w-[150px]">
+        <div className="font-bold text-slate-800 dark:text-white">{transaction.recipient_name}</div>
+        <div className="text-xs text-slate-500 truncate max-w-[150px]">
           {transaction.recipient_bank} • {transaction.recipient_account.slice(-4)}
         </div>
       </td>
 
       <td className="px-4 py-4 hidden sm:table-cell">
-        <div className="font-bold text-text-primary">
+        <div className="font-bold text-slate-800 dark:text-white">
           {transaction.amount_sent.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          <span className="text-xs ml-1 text-text-secondary font-normal">{transaction.currency_sent}</span>
+          <span className="text-xs ml-1 text-slate-500 font-medium">{transaction.currency_sent}</span>
         </div>
       </td>
 
       <td className="px-4 py-4">
-        <div className="flex items-center gap-2 bg-bg-tertiary w-fit px-2 py-1 rounded-full border border-border/50">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 w-fit px-2 py-1 rounded-full border border-slate-200 dark:border-slate-600">
           {fromCountry && <FlagIcon countryCode={fromCountry.code} className="w-4 h-4 rounded-full shadow-sm" />}
-          <ArrowRightIcon className="w-3 h-3 text-text-tertiary" />
+          <ArrowRightIcon className="w-3 h-3 text-slate-400" />
           {toCountry && <FlagIcon countryCode={toCountry.code} className="w-4 h-4 rounded-full shadow-sm" />}
         </div>
       </td>
 
       <td className="px-4 py-4">
-        <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${statusStyle} inline-flex items-center gap-1`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.replace('bg-', 'bg-current ').split(' ')[0]}`} />
+        <span className={`px-3 py-1 text-[10px] font-bold rounded-full border ${statusStyle} inline-flex items-center gap-1.5 uppercase tracking-wide`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.includes('text-teal') ? 'bg-teal-500' : statusStyle.includes('text-red') ? 'bg-red-500' : statusStyle.includes('text-blue') ? 'bg-blue-500' : 'bg-amber-500'}`} />
           {transaction.status}
         </span>
       </td>

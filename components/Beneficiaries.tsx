@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import Card from './common/Card';
+import { Card } from './ui/Card'; // Updated import
+import { Button } from './ui/Button'; // New import
 import type { User, Beneficiary } from '../types';
 import { supabase } from '../supabaseClient';
 import { COUNTRIES } from '../constants';
@@ -63,14 +64,14 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
 
   const handleDelete = async (beneficiaryId: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este beneficiario?')) {
-        try {
-            const { error } = await supabase.from('beneficiaries').delete().eq('id', beneficiaryId);
-            if (error) throw error;
-            fetchBeneficiaries(); // Recargar la lista
-        } catch (e) {
-            const err = e as Error;
-            alert('Error al eliminar: ' + err.message);
-        }
+      try {
+        const { error } = await supabase.from('beneficiaries').delete().eq('id', beneficiaryId);
+        if (error) throw error;
+        fetchBeneficiaries(); // Recargar la lista
+      } catch (e) {
+        const err = e as Error;
+        alert('Error al eliminar: ' + err.message);
+      }
     }
   };
 
@@ -95,10 +96,15 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
 
     if (beneficiaries.length === 0) {
       return (
-        <div className="text-center p-12 text-gray-500 dark:text-gray-400">
-          <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-xl font-semibold text-gray-800 dark:text-white">Sin Beneficiarios Guardados</h3>
-          <p className="mt-1 text-sm">Añade tu primer beneficiario para agilizar tus envíos.</p>
+        <div className="text-center p-12 text-slate-400">
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <UsersIcon className="h-10 w-10 text-slate-300" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white">Sin Beneficiarios</h3>
+          <p className="mt-2 text-sm max-w-xs mx-auto">Añade tu primer beneficiario para agilizar tus envíos.</p>
+          <Button onClick={handleAdd} className="mt-6 shadow-lg shadow-primary/20">
+            Añadir Beneficiario
+          </Button>
         </div>
       );
     }
@@ -106,73 +112,96 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
     const start = (currentPage - 1) * itemsPerPage;
     const pageItems = beneficiaries.slice(start, start + itemsPerPage);
     const totalPages = Math.ceil(beneficiaries.length / itemsPerPage) || 1;
+
     return (
-      <>
+      <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {pageItems.map(ben => {
             const country = COUNTRIES.find(c => c.code === ben.country_code);
             return (
-              <div key={ben.id} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                          {country && <FlagIcon countryCode={country.code} className="w-6 h-auto rounded-full" />}
-                          <h4 className="font-bold text-gray-800 dark:text-white">{ben.name}</h4>
-                      </div>
-                      <div className="flex items-center gap-2">
-                          <button onClick={() => handleEdit(ben)} className="p-1.5 rounded-md text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-700" aria-label="Editar beneficiario"><PencilIcon className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(ben.id)} className="p-1.5 rounded-md text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50" aria-label="Eliminar beneficiario"><TrashIcon className="w-4 h-4" /></button>
-                      </div>
+              <Card key={ben.id} variant="default" padding="md" className="group hover:border-primary/30 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    {country && <FlagIcon countryCode={country.code} className="w-10 h-10 rounded-full shadow-sm" />}
+                    <div>
+                      <h4 className="font-bold text-slate-800 dark:text-white text-lg">{ben.name}</h4>
+                      <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{country?.name}</p>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 pl-9">
-                      <p>{ben.bank}</p>
-                      <p className="font-mono">...{ben.account_number.slice(-4)}</p>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => handleEdit(ben)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-primary transition-colors">
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(ben.id)} className="p-2 hover:bg-red-50 rounded-full text-slate-400 hover:text-error transition-colors">
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-                <button onClick={() => onSelectBeneficiary(ben)} className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
-                  <SendIcon className="w-4 h-4" />
+
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 mb-4 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Banco</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{ben.bank}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Cuenta</span>
+                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">...{ben.account_number.slice(-4)}</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => onSelectBeneficiary(ben)}
+                  className="w-full shadow-md shadow-primary/10 group-hover:shadow-primary/20"
+                >
+                  <SendIcon className="w-4 h-4 mr-2" />
                   Enviar Dinero
-                </button>
-              </div>
+                </Button>
+              </Card>
             );
           })}
         </div>
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={(n)=>{ setItemsPerPage(n); setCurrentPage(1); }}
-        />
-      </>
+
+        {totalPages > 1 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+          />
+        )}
+      </div>
     );
   };
-  
+
 
   return (
     <>
-      <Card>
-        <div className="flex justify-between items-center mb-6">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Mis Beneficiarios</h2>
-                <p className="text-gray-500 dark:text-gray-400">Gestiona tus destinatarios para envíos rápidos.</p>
-            </div>
-            <button onClick={handleAdd} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                <PlusCircleIcon className="w-5 h-5" />
-                <span>Añadir</span>
-            </button>
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">Mis Beneficiarios</h2>
+            <p className="text-slate-500 font-medium">Gestiona tus destinatarios frecuentes</p>
+          </div>
+          {beneficiaries.length > 0 && (
+            <Button onClick={handleAdd} className="shadow-lg shadow-primary/20">
+              <PlusCircleIcon className="w-5 h-5 mr-2" />
+              Nuevo Beneficiario
+            </Button>
+          )}
         </div>
+
         {renderContent()}
-      </Card>
+      </div>
 
       <AnimatePresence>
         {isModalOpen && (
-            <BeneficiaryModal
-                user={user}
-                beneficiaryToEdit={beneficiaryToEdit}
-                onClose={() => setIsModalOpen(false)}
-                onSave={handleSave}
-            />
+          <BeneficiaryModal
+            user={user}
+            beneficiaryToEdit={beneficiaryToEdit}
+            onClose={() => setIsModalOpen(false)}
+            onSave={handleSave}
+          />
         )}
       </AnimatePresence>
     </>

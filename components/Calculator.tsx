@@ -14,7 +14,6 @@ import FlagIcon from './icons/FlagIcon';
 import { supabase } from '../supabaseClient';
 import XIcon from './icons/XIcon';
 import ArrowRightIcon from './icons/ArrowRightIcon';
-import ExchangeRateBanner from './ExchangeRateBanner';
 import CountrySelector from './CountrySelector';
 import { logger } from '../services/logger';
 
@@ -506,131 +505,153 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
       const originCountries = COUNTRIES.filter(c => allowedOriginCodes.includes(c.code) || c.region === 'Europe');
       return (
         <motion.div key="step1" {...stepAnimation} className="space-y-6">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-text-primary mb-2">Enviar Remesa</h2>
-            <p className="text-text-secondary">Calcula y envía dinero de forma rápida y segura.</p>
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setActiveScreen(Screen.Calculator)} // Or welcome if available
+              className="p-3 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <ArrowLeftIcon className="w-6 h-6 text-slate-600" />
+            </button>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Enviar Dinero</h2>
           </div>
 
-          <ExchangeRateBanner />
-
-          <Card variant="default" padding="lg" className="space-y-8">
-            {/* Country Selector Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-4">
-              <CountrySelector
-                label="Desde"
-                countries={originCountries}
-                selectedCode={fromCountryCode}
-                onSelect={handleCountrySelectAndFocus(setFromCountryCode)}
-              />
-
-              <div className="flex justify-center md:pt-6">
-                <motion.button
-                  onClick={handleSwap}
-                  className="bg-bg-secondary p-3 rounded-full hover:bg-bg-tertiary hover:text-primary transition-colors shadow-sm"
-                  whileHover={{ rotate: 180, scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <SwapIcon className="w-5 h-5 text-text-secondary" />
-                </motion.button>
+          {/* Dark Rate Card (Replaces ExchangeRateBanner) */}
+          <div className="bg-slate-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl" />
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+              <span className="text-accent text-sm font-bold tracking-wide">TASA EN TIEMPO REAL</span>
+            </div>
+            <div className="flex justify-between items-end relative z-10">
+              <div>
+                <p className="text-slate-400 text-sm">1 {fromCurrency} equivale a</p>
+                <p className="text-3xl font-bold mt-1">
+                  {getRate(fromCurrency, receivedCurrency).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {receivedCurrency}
+                </p>
               </div>
+              <div className="text-right">
+                <p className="text-secondary text-sm font-medium flex items-center gap-1">
+                  <CheckCircleIcon className="w-4 h-4" />
+                  Mejor tasa garantizada
+                </p>
+              </div>
+            </div>
+          </div>
 
-              <CountrySelector
-                label="Hacia"
-                countries={COUNTRIES.filter(c => c.code !== fromCountryCode)}
-                selectedCode={toCountryCode}
-                onSelect={handleCountrySelectAndFocus(setToCountryCode)}
-              />
+          {/* Main Input Form */}
+          <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-2 shadow-sm border border-slate-100 dark:border-slate-700">
+
+            {/* Origin Country */}
+            <div className="p-6 pb-2">
+              <div className="flex items-center gap-4 mt-2">
+                <CountrySelector
+                  countries={originCountries}
+                  selectedCode={fromCountryCode}
+                  onSelect={handleCountrySelectAndFocus(setFromCountryCode)}
+                  variant="pill"
+                />
+                <Input
+                  ref={amountInputRef}
+                  label="Tú envías"
+                  name="amount"
+                  value={amount}
+                  onChange={handleInputChange}
+                  error={formErrors.amount}
+                  placeholder="0.00"
+                  variant="big"
+                />
+              </div>
             </div>
 
-            {/* Amount Input */}
-            <div>
-              <Input
-                ref={amountInputRef}
-                label="Tú envías"
-                name="amount"
-                value={amount}
-                onChange={handleInputChange}
-                error={formErrors.amount}
-                rightIcon={<span className="font-bold text-text-secondary">{fromCurrency}</span>}
-                placeholder="0.00"
-                className="text-lg font-bold"
-              />
+            {/* Divider with Swap Icon */}
+            <div className="relative h-px bg-slate-100 dark:bg-slate-700 my-2 mx-6">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-800 p-2 rounded-full border border-slate-100 dark:border-slate-700 text-secondary shadow-sm cursor-pointer hover:scale-110 transition-transform" onClick={handleSwap}>
+                <SwapIcon className="w-5 h-5" />
+              </div>
             </div>
 
-            {/* Summary Card */}
-            <Card variant="colored" padding="md" className="space-y-4 border border-primary/10">
-              <div className="flex justify-between items-center text-sm text-text-secondary">
-                <span>Comisión ({REMITTANCE_FEE_PERCENTAGE * 100}%)</span>
-                <span className="font-medium text-text-primary">{fee.toFixed(2)} {fromCurrency}</span>
-              </div>
-
-              <div className="flex justify-between items-center text-sm text-text-secondary">
-                <span>Tasa de cambio</span>
-                <span className="font-medium text-text-primary">{exchangeRateText}</span>
-              </div>
-
-              <div className="h-px bg-primary/10 my-2" />
-
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary font-bold">Receptor recibe</span>
-                <span className="font-bold text-accent-dark text-xl">
-                  {receivedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {receivedCurrency}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary font-bold">Total a pagar</span>
-                <span className="font-bold text-text-primary text-lg">{total.toFixed(2)} {fromCurrency}</span>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 pt-2 text-xs text-text-secondary">
-                <ClockIcon className="w-4 h-4" />
-                <span>Llegada estimada: <span className="font-semibold text-primary">{arrivalTime}</span></span>
-              </div>
-            </Card>
-
-            {/* Action Button */}
-            <div className="space-y-4">
-              <Button
-                onClick={handleContinueToRecipient}
-                disabled={
-                  !user.isVerified ||
-                  !!formErrors.amount ||
-                  getCleanAmount(amount) <= 0 ||
-                  getCleanAmount(amount) < (COUNTRIES.find(c => c.code === fromCountryCode)?.minimumSendAmount || 0)
-                }
-                size="lg"
-                className="w-full"
-              >
-                {user.isVerified ? 'Continuar con el Envío' : 'Verificación Requerida'}
-              </Button>
-
-              {/* Warnings */}
-              {getCleanAmount(amount) > 0 &&
-                getCleanAmount(amount) < (COUNTRIES.find(c => c.code === fromCountryCode)?.minimumSendAmount || 0) && (
-                  <p className="text-error text-sm text-center font-medium">
-                    ⚠️ El monto mínimo es {COUNTRIES.find(c => c.code === fromCountryCode)?.minimumSendAmount.toLocaleString()} {fromCurrency}
-                  </p>
-                )}
-
-              {!user.isVerified && (
-                <div className="p-4 rounded-xl bg-warning/10 text-warning-dark text-sm flex items-center gap-4 border border-warning/20">
-                  <span className="text-xl">⚠️</span>
-                  <div className="flex-1">
-                    <p className="font-bold">Verificación Requerida</p>
-                    <p>Debes verificar tu perfil para poder enviar dinero.</p>
+            {/* Destination Country */}
+            <div className="p-6 pt-2">
+              <div className="flex items-center gap-4 mt-2">
+                <CountrySelector
+                  countries={COUNTRIES.filter(c => c.code !== fromCountryCode)}
+                  selectedCode={toCountryCode}
+                  onSelect={handleCountrySelectAndFocus(setToCountryCode)}
+                  variant="pill"
+                />
+                <div className="w-full flex flex-col">
+                  <label className="text-slate-400 text-sm font-bold uppercase tracking-wider ml-1 mb-1">
+                    Ellos reciben
+                  </label>
+                  <div className="text-4xl font-extrabold text-accent text-right px-0 py-2">
+                    {receivedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setActiveScreen(Screen.Profile)}
-                  >
-                    Verificar
-                  </Button>
                 </div>
-              )}
+              </div>
             </div>
-          </Card>
+          </div>
+
+          {/* Fee Summary */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 space-y-3">
+            <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+              <span className="flex items-center gap-2 text-sm">
+                Comisión de servicio
+              </span>
+              <span className="font-bold">{fee.toFixed(2)} {fromCurrency}</span>
+            </div>
+            <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+              <span className="text-sm">Total a pagar</span>
+              <span className="font-bold">{total.toFixed(2)} {fromCurrency}</span>
+            </div>
+            <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-slate-800 dark:text-white">Tiempo de entrega</span>
+              <span className="font-bold text-accent bg-accent/10 px-3 py-1 rounded-full text-xs">⚡ {arrivalTime}</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="pt-4">
+            <Button
+              onClick={handleContinueToRecipient}
+              disabled={
+                !user.isVerified ||
+                !!formErrors.amount ||
+                getCleanAmount(amount) <= 0 ||
+                getCleanAmount(amount) < (COUNTRIES.find(c => c.code === fromCountryCode)?.minimumSendAmount || 0)
+              }
+              size="lg"
+              className="w-full py-6 text-xl shadow-xl shadow-primary/30"
+            >
+              {user.isVerified ? 'Continuar con el Envío' : 'Verificación Requerida'}
+            </Button>
+
+            {/* Warnings */}
+            {getCleanAmount(amount) > 0 &&
+              getCleanAmount(amount) < (COUNTRIES.find(c => c.code === fromCountryCode)?.minimumSendAmount || 0) && (
+                <p className="text-error text-sm text-center font-medium mt-2">
+                  ⚠️ El monto mínimo es {COUNTRIES.find(c => c.code === fromCountryCode)?.minimumSendAmount.toLocaleString()} {fromCurrency}
+                </p>
+              )}
+
+            {!user.isVerified && (
+              <div className="mt-4 p-4 rounded-xl bg-warning/10 text-warning-dark text-sm flex items-center gap-4 border border-warning/20">
+                <span className="text-xl">⚠️</span>
+                <div className="flex-1">
+                  <p className="font-bold">Verificación Requerida</p>
+                  <p>Debes verificar tu perfil para poder enviar dinero.</p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setActiveScreen(Screen.Profile)}
+                >
+                  Verificar
+                </Button>
+              </div>
+            )}
+          </div>
         </motion.div>
       );
     };
@@ -670,6 +691,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               value={recipientName}
               onChange={handleInputChange}
               error={formErrors.recipientName}
+              variant="clean"
             />
 
             <div className="space-y-1">
@@ -679,7 +701,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
                   name="recipientBank"
                   value={recipientBank}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border-2 border-border rounded-2xl appearance-none focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl appearance-none focus:outline-none focus:border-primary transition-colors"
                 >
                   <option value="" disabled>Selecciona un banco</option>
                   {availableBanks.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
@@ -696,6 +718,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               value={recipientAccount}
               onChange={handleInputChange}
               error={formErrors.recipientAccount}
+              variant="clean"
             />
 
             <Input
@@ -704,6 +727,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               value={recipientId}
               onChange={handleInputChange}
               error={formErrors.recipientId}
+              variant="clean"
             />
 
             <div className="flex items-center pt-2">
@@ -771,123 +795,123 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3 text-text-secondary group-hover:text-primary transition-colors">
-                    <div className="w-12 h-12 bg-bg-tertiary rounded-full flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                    </div>
-                    <div>
-                      <p className="font-medium">Haz clic para subir o arrastra la imagen</p>
-                      <p className="text-xs mt-1 opacity-70">(JPG, PNG)</p>
-                    </div>
+                    <span>Arrastra tu comprobante aquí o haz click</span>
                   </div>
                 )}
               </div>
-
-              <Button
-                onClick={handleUploadReceipt}
-                disabled={!receiptFile || isUploading}
-                isLoading={isUploading}
-                size="lg"
-                className="w-full"
-              >
-                Subir y Confirmar
-              </Button>
             </div>
+
+            <Button
+              onClick={handleUploadReceipt}
+              disabled={!receiptFile || isUploading}
+              isLoading={isUploading}
+              size="lg"
+              className="w-full py-6 text-xl shadow-xl shadow-primary/30"
+            >
+              {isUploading ? 'Subiendo...' : 'Confirmar y Enviar'}
+            </Button>
           </Card>
         </motion.div>
       );
     };
 
-    const renderStep5_Success = () => (
-      <motion.div key="step5" {...stepAnimation}>
-        <Card variant="gradient" padding="lg" className="text-center py-12">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="w-24 h-24 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6"
-          >
-            <CheckCircleIcon className="w-12 h-12 text-accent-dark" />
-          </motion.div>
+    const renderStep4_Summary = () => {
+      // This is now handled by the Modal, but keeping a placeholder if needed for state logic
+      return null;
+    };
 
-          <h2 className="text-3xl font-bold text-text-primary mb-2">¡Envío exitoso!</h2>
-          <p className="text-text-secondary mb-8 text-lg">Tu transacción ha sido enviada a verificación.</p>
-
-          <div className="bg-white/50 p-4 rounded-xl inline-block mb-8 border border-border">
-            <p className="text-sm text-text-secondary uppercase tracking-wider font-medium">ID de Transacción</p>
-            <p className="text-xl font-mono font-bold text-primary">{transactionId}</p>
+    const renderStep5_Success = () => {
+      return (
+        <motion.div key="step5" {...stepAnimation} className="text-center space-y-8 py-12">
+          <div className="w-32 h-32 bg-accent/20 rounded-full flex items-center justify-center mx-auto relative">
+            <div className="absolute inset-0 bg-accent/20 rounded-full animate-ping" />
+            <CheckCircleIcon className="w-16 h-16 text-accent" />
           </div>
 
-          <div>
-            <Button onClick={handleNewTransaction} size="lg">
-              Enviar otra remesa
+          <div className="space-y-2">
+            <h2 className="text-3xl font-extrabold text-text-primary">¡Envío Exitoso!</h2>
+            <p className="text-text-secondary text-lg">Tu transacción ha sido procesada correctamente.</p>
+          </div>
+
+          <Card variant="glass" padding="lg" className="max-w-sm mx-auto bg-white/50 backdrop-blur-sm border-white/50">
+            <p className="text-sm text-text-secondary uppercase tracking-wider font-bold mb-1">ID de Transacción</p>
+            <p className="text-2xl font-mono font-bold text-primary select-all">{transactionId}</p>
+          </Card>
+
+          <div className="flex flex-col gap-3 max-w-xs mx-auto">
+            <Button onClick={handleNewTransaction} size="lg" className="shadow-lg shadow-primary/20">
+              Realizar otro envío
+            </Button>
+            <Button variant="ghost" onClick={() => setActiveScreen(Screen.History)}>
+              Ver Historial
             </Button>
           </div>
-        </Card>
-      </motion.div>
-    );
+        </motion.div>
+      );
+    };
 
-    const renderStep6_Error = () => (
-      <motion.div key="step6" {...stepAnimation}>
-        <Card variant="default" padding="lg" className="text-center py-12 border-error/20">
-          <div className="w-24 h-24 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <XCircleIcon className="w-12 h-12 text-error" />
+    const renderStep6_Error = () => {
+      return (
+        <motion.div key="step6" {...stepAnimation} className="text-center space-y-8 py-12">
+          <div className="w-32 h-32 bg-error/10 rounded-full flex items-center justify-center mx-auto">
+            <XCircleIcon className="w-16 h-16 text-error" />
           </div>
 
-          <h2 className="text-2xl font-bold text-text-primary mb-2">Error al enviar</h2>
-          <p className="text-text-secondary mb-6">Hubo un problema al procesar tu envío.</p>
-
-          <div className="bg-error/5 p-4 rounded-xl mb-8 text-error font-medium">
-            {submissionError}
+          <div className="space-y-2">
+            <h2 className="text-3xl font-extrabold text-text-primary">Algo salió mal</h2>
+            <p className="text-text-secondary text-lg max-w-md mx-auto">
+              {submissionError || 'No pudimos procesar tu solicitud. Por favor intenta nuevamente.'}
+            </p>
           </div>
 
-          <Button onClick={handleNewTransaction} variant="secondary">
-            Intentar de nuevo
-          </Button>
-        </Card>
-      </motion.div>
-    );
-
-    const renderCurrentStep = () => {
-      switch (step) {
-        case 1: return renderStep1_Calculator();
-        case 2: return renderStep2_Recipient();
-        case 3: return renderStep3_Payment();
-        case 4: return renderStep3_Payment(); // Keep showing payment while modal is open
-        case 5: return renderStep5_Success();
-        case 6: return renderStep6_Error();
-        default: return renderStep1_Calculator();
-      }
+          <div className="flex gap-4 justify-center">
+            <Button variant="secondary" onClick={() => setStep(3)}>
+              Intentar de nuevo
+            </Button>
+            <Button variant="ghost" onClick={handleNewTransaction}>
+              Volver al inicio
+            </Button>
+          </div>
+        </motion.div>
+      );
     };
 
     return (
       <PageTransition>
-        <div className="max-w-2xl mx-auto">
-          <AnimatePresence mode="wait">
-            {renderCurrentStep()}
-          </AnimatePresence>
+        <AnimatePresence mode="wait">
+          {step === 1 && renderStep1_Calculator()}
+          {step === 2 && renderStep2_Recipient()}
+          {step === 3 && renderStep3_Payment()}
+          {step === 4 && (
+            <Card className="flex items-center justify-center p-12">
+              <div className="flex flex-col items-center gap-4 text-text-secondary">
+                <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <p>Procesando transacción...</p>
+              </div>
+            </Card>
+          )}
+          {step === 5 && renderStep5_Success()}
+          {step === 6 && renderStep6_Error()}
+        </AnimatePresence>
 
-          <AnimatePresence>
-            {isSummaryVisible && calculationResult && (
-              <TransactionSummaryModal
-                details={{
-                  amount,
-                  fee,
-                  total,
-                  fromCurrency,
-                  receivedAmount,
-                  receivedCurrency,
-                  fromCountryCode,
-                  toCountryCode,
-                }}
-                onConfirm={handleConfirmSend}
-                onClose={() => {
-                  setIsSummaryVisible(false);
-                  setStep(3); // Go back to payment step if cancelled
-                }}
-              />
-            )}
-          </AnimatePresence>
-        </div>
+        <AnimatePresence>
+          {isSummaryVisible && (
+            <TransactionSummaryModal
+              details={{
+                amount,
+                fee,
+                total,
+                fromCurrency,
+                receivedAmount,
+                receivedCurrency,
+                fromCountryCode,
+                toCountryCode,
+              }}
+              onConfirm={handleConfirmSend}
+              onClose={() => setIsSummaryVisible(false)}
+            />
+          )}
+        </AnimatePresence>
       </PageTransition>
     );
   }

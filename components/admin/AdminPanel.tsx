@@ -3,6 +3,10 @@ import PaginationControls from '../PaginationControls';
 import { isAdmin, fetchMetrics, fetchUsers, updateUser, deleteUser, fetchSettings, saveSettings, fetchActivity } from '../../services/adminService'
 import KycReviewPanel from './KycReviewPanel';
 import Transactions from './Transactions';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { LayoutDashboard, Users, Settings, Activity, ShieldCheck, Search, Filter } from 'lucide-react';
+import { PageTransition } from '../animations/PageTransition';
 
 type Tab = 'Dashboard' | 'Users' | 'Settings' | 'Operaciones' | 'KYC'
 
@@ -46,107 +50,204 @@ export default function AdminPanel({ user }: { user: { email?: string; id?: stri
 
   if (!isAdmin(user)) {
     return (
-      <div className="p-6">
+      <div className="p-6 flex flex-col items-center justify-center h-full text-center">
+        <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+          <ShieldCheck className="w-8 h-8 text-red-500" />
+        </div>
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Acceso denegado</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300">No tienes privilegios de administrador.</p>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">No tienes privilegios de administrador para ver esta sección.</p>
       </div>
     )
   }
 
+  const tabs = [
+    { id: 'Dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'Operaciones', label: 'Operaciones', icon: Activity },
+    { id: 'Users', label: 'Usuarios', icon: Users },
+    { id: 'KYC', label: 'KYC', icon: ShieldCheck },
+    { id: 'Settings', label: 'Configuración', icon: Settings },
+  ] as const;
+
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Panel de Administración</h2>
-        <div className="flex gap-2 overflow-x-auto max-w-full">
-          {(['Dashboard', 'Operaciones', 'Users', 'KYC', 'Settings'] as Tab[]).map(t => (
-            <button key={t} onClick={() => setTab(t)} className={`px-3 py-2 rounded-md text-sm ${tab === t ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>{t}</button>
-          ))}
-        </div>
-      </div>
-
-      {loading && <div className="text-sm text-gray-500 dark:text-gray-400">Cargando...</div>}
-      {error && <div className="text-sm text-red-600 dark:text-red-400 mb-3">{error}</div>}
-
-      {tab === 'Dashboard' && metrics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Transacciones</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.totalTransactions}</p>
+    <PageTransition>
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">Panel de Administración</h2>
+            <p className="text-slate-500 font-medium">Gestión integral de la plataforma</p>
           </div>
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Monto enviado</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.totalAmountSent}</p>
-          </div>
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Usuarios</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.totalUsers}</p>
-          </div>
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Verificaciones</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.totalVerifications}</p>
-          </div>
-        </div>
-      )}
 
-      {tab === 'Users' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 sm:p-4">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-600 dark:text-gray-300">
-                  <th className="py-2">Nombre</th>
-                  <th className="py-2">Email</th>
-                  <th className="py-2">Teléfono</th>
-                  <th className="py-2">Verificado</th>
-                  <th className="py-2">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.slice((usersPage - 1) * usersPerPage, (usersPage - 1) * usersPerPage + usersPerPage).map(u => (
-                  <tr key={u.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="py-2">{u.full_name || ''}</td>
-                    <td className="py-2">{u.email || ''}</td>
-                    <td className="py-2">{u.phone || ''}</td>
-                    <td className="py-2">{u.is_verified ? 'Sí' : 'No'}</td>
-                    <td className="py-2 flex gap-2">
-                      <button onClick={async () => { await updateUser(u.id, { is_verified: !u.is_verified }); const list = await fetchUsers(); setUsers(list) }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs sm:text-sm">Toggle</button>
-                      <button onClick={async () => { await deleteUser(u.id); const list = await fetchUsers(); setUsers(list) }} className="px-2 py-1 rounded bg-red-600 text-white text-xs sm:text-sm">Eliminar</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <PaginationControls
-            currentPage={usersPage}
-            totalPages={Math.max(1, Math.ceil(users.length / usersPerPage))}
-            onPageChange={setUsersPage}
-            itemsPerPage={usersPerPage}
-            onItemsPerPageChange={(n) => { setUsersPerPage(n); setUsersPage(1); }}
-          />
-        </div>
-      )}
-
-      {tab === 'KYC' && (
-        <KycReviewPanel user={user as any} />
-      )}
-
-      {tab === 'Settings' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="space-y-2">
-            {settings.map((s, idx) => (
-              <div key={idx} className="flex gap-2 items-center">
-                <input className="flex-1 bg-gray-100 dark:bg-gray-700 rounded px-2 py-1 text-gray-800 dark:text-gray-200" value={s.value || ''} onChange={e => { const next = [...settings]; next[idx] = { ...s, value: e.target.value }; setSettings(next) }} />
-                <button onClick={async () => { await saveSettings(s); const list = await fetchSettings(); setSettings(list) }} className="px-2 py-1 rounded bg-indigo-600 text-white">Guardar</button>
-              </div>
+          <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto max-w-full no-scrollbar">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === t.id
+                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                  }`}
+              >
+                <t.icon size={16} />
+                {t.label}
+              </button>
             ))}
           </div>
         </div>
-      )}
 
-      {tab === 'Operaciones' && (
-        <Transactions />
-      )}
-    </div>
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/30 flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            {tab === 'Dashboard' && metrics && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card variant="default" padding="md" className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Transacciones</p>
+                  <p className="text-3xl font-extrabold text-slate-800 dark:text-white">{metrics.totalTransactions}</p>
+                  <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
+                    <div className="h-full bg-primary w-3/4 rounded-full"></div>
+                  </div>
+                </Card>
+                <Card variant="default" padding="md" className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Monto enviado</p>
+                  <p className="text-3xl font-extrabold text-slate-800 dark:text-white">{metrics.totalAmountSent}</p>
+                  <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
+                    <div className="h-full bg-secondary w-1/2 rounded-full"></div>
+                  </div>
+                </Card>
+                <Card variant="default" padding="md" className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Usuarios</p>
+                  <p className="text-3xl font-extrabold text-slate-800 dark:text-white">{metrics.totalUsers}</p>
+                  <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
+                    <div className="h-full bg-accent w-2/3 rounded-full"></div>
+                  </div>
+                </Card>
+                <Card variant="default" padding="md" className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Verificaciones</p>
+                  <p className="text-3xl font-extrabold text-slate-800 dark:text-white">{metrics.totalVerifications}</p>
+                  <div className="h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
+                    <div className="h-full bg-warning w-4/5 rounded-full"></div>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {tab === 'Users' && (
+              <Card variant="default" padding="none" className="overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                  <h3 className="font-bold text-slate-700 dark:text-slate-200">Gestión de Usuarios</h3>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder="Buscar usuario..."
+                      className="pl-9 pr-4 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all w-64"
+                    />
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase text-slate-500 font-semibold">
+                      <tr>
+                        <th className="px-6 py-3">Nombre</th>
+                        <th className="px-6 py-3">Email</th>
+                        <th className="px-6 py-3">Teléfono</th>
+                        <th className="px-6 py-3">Verificado</th>
+                        <th className="px-6 py-3 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                      {users.slice((usersPage - 1) * usersPerPage, (usersPage - 1) * usersPerPage + usersPerPage).map(u => (
+                        <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{u.full_name || '-'}</td>
+                          <td className="px-6 py-4 text-slate-500">{u.email || '-'}</td>
+                          <td className="px-6 py-4 text-slate-500 font-mono">{u.phone || '-'}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${u.is_verified ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                              {u.is_verified ? 'Verificado' : 'Pendiente'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 flex justify-end gap-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={async () => { await updateUser(u.id, { is_verified: !u.is_verified }); const list = await fetchUsers(); setUsers(list) }}
+                            >
+                              {u.is_verified ? 'Invalidar' : 'Verificar'}
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={async () => { if (confirm('¿Estás seguro?')) { await deleteUser(u.id); const list = await fetchUsers(); setUsers(list) } }}
+                            >
+                              Eliminar
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-4 border-t border-slate-100 dark:border-slate-700">
+                  <PaginationControls
+                    currentPage={usersPage}
+                    totalPages={Math.max(1, Math.ceil(users.length / usersPerPage))}
+                    onPageChange={setUsersPage}
+                    itemsPerPage={usersPerPage}
+                    onItemsPerPageChange={(n) => { setUsersPerPage(n); setUsersPage(1); }}
+                  />
+                </div>
+              </Card>
+            )}
+
+            {tab === 'KYC' && (
+              <KycReviewPanel user={user as any} />
+            )}
+
+            {tab === 'Settings' && (
+              <Card variant="default" padding="lg">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Configuración del Sistema</h3>
+                <div className="space-y-4">
+                  {settings.map((s, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                          {s.key || 'Configuración'}
+                        </label>
+                        <input
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          value={s.value || ''}
+                          onChange={e => { const next = [...settings]; next[idx] = { ...s, value: e.target.value }; setSettings(next) }}
+                        />
+                      </div>
+                      <Button
+                        onClick={async () => { await saveSettings(s); const list = await fetchSettings(); setSettings(list) }}
+                        className="mt-6 sm:mt-0"
+                      >
+                        Guardar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {tab === 'Operaciones' && (
+              <Transactions />
+            )}
+          </>
+        )}
+      </div>
+    </PageTransition>
   )
 }

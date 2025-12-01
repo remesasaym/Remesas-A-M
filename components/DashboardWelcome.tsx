@@ -1,137 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import type { User } from '../types';
-import { supabase } from '../supabaseClient';
-import { useExchangeRates } from '../contexts/ExchangeRateContext';
+import React from 'react';
+import { User } from '../types';
 import { Card } from './ui/Card';
-import { Button } from './ui/Button';
 
 interface DashboardWelcomeProps {
-  user: User;
-  onNewTransaction: () => void;
+    user: User;
+    onNewTransaction: () => void;
 }
-
-interface SummaryData {
-  transactionCount: number;
-  totalSentUSD: number;
-}
-
-const getFirstName = (fullName: string): string => {
-  if (!fullName) return 'Usuario';
-  return fullName.split(' ')[0];
-};
-
-const SkeletonLoader: React.FC = () => (
-  <div className="space-y-4">
-    <div className="h-8 bg-gradient-to-r from-bg-secondary via-bg-tertiary to-bg-secondary rounded-lg animate-pulse" style={{ backgroundSize: '200% 100%' }} />
-    <div className="h-6 bg-gradient-to-r from-bg-secondary via-bg-tertiary to-bg-secondary rounded-lg w-3/4 animate-pulse" style={{ backgroundSize: '200% 100%' }} />
-    <div className="h-12 bg-gradient-to-r from-bg-secondary via-bg-tertiary to-bg-secondary rounded-lg w-48 animate-pulse" style={{ backgroundSize: '200% 100%' }} />
-  </div>
-);
 
 const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransaction }) => {
-  const [summary, setSummary] = useState<SummaryData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { countriesWithLatestRates } = useExchangeRates();
+    return (
+        <div className="space-y-8 animate-fade-in-up mb-8">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+                        Hola, {user.fullName.split(' ')[0]} <span className="inline-block animate-bounce">👋</span>
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Bienvenido a Remesas A&M</p>
+                </div>
+                {/* Avatar placeholder if no image */}
+                <div className="w-12 h-12 rounded-full bg-secondary/20 border-2 border-secondary p-1 flex items-center justify-center overflow-hidden">
+                    <span className="text-xl font-bold text-secondary">
+                        {user.fullName.charAt(0)}
+                    </span>
+                </div>
+            </div>
 
-  useEffect(() => {
-    const fetchSummary = async () => {
-      if (!user?.id || countriesWithLatestRates.length === 0) return;
+            {/* Main Stats Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-warning/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2 group-hover:bg-warning/20 transition-colors" />
 
-      setLoading(true);
-      try {
-        const { data: transactions, error } = await supabase
-          .from('transactions')
-          .select('amount_sent, currency_sent')
-          .eq('user_id', user.id);
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-3 bg-accent/20 text-accent-dark rounded-2xl">
+                            {/* TrendingUp Icon */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                        </div>
+                        <span className="text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-sm">Total Enviado</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-5xl sm:text-6xl font-extrabold text-slate-800 dark:text-white tracking-tighter">$0.00</span>
+                        <span className="text-xl text-slate-400 font-bold">USD</span>
+                    </div>
+                    <div className="mt-6 flex items-center gap-2 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 w-fit px-4 py-2 rounded-full">
+                        <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                        <span className="text-sm font-medium">0 transacciones exitosas</span>
+                    </div>
+                </div>
+            </div>
 
-        if (error) throw error;
-
-        const transactionCount = transactions.length;
-
-        const totalSentUSD = transactions.reduce((total, tx) => {
-          const country = countriesWithLatestRates.find(c => c.currency === tx.currency_sent);
-          const rate = country?.exchangeRateToUSD || 1;
-          const amountInUSD = tx.amount_sent / rate;
-          return total + amountInUSD;
-        }, 0);
-
-        setSummary({ transactionCount, totalSentUSD });
-
-      } catch (err) {
-        console.error("Error fetching transaction summary:", err);
-        setSummary({ transactionCount: 0, totalSentUSD: 0 });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSummary();
-  }, [user.id, countriesWithLatestRates]);
-
-  return (
-    <Card
-      variant="default"
-      padding="lg"
-      className="mb-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-    >
-      {loading ? (
-        <SkeletonLoader />
-      ) : (
-        <div className="space-y-4">
-          {/* Header Row: Greeting + Button */}
-          <div className="flex items-center justify-between">
-            <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4 }}
-              className="text-2xl font-bold text-gray-900 dark:text-white"
-            >
-              Hola de nuevo, {getFirstName(user.fullName)} 👋
-            </motion.h2>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
+            {/* Primary Action */}
+            <button
                 onClick={onNewTransaction}
-                className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Nuevo Envío
-              </Button>
-            </motion.div>
-          </div>
-
-          {/* Statistics Row */}
-          {summary && summary.transactionCount > 0 && (
-            <motion.p
-              className="text-sm text-gray-600 dark:text-gray-400"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+                className="w-full bg-primary hover:bg-primary-dark text-white py-6 rounded-full text-xl font-bold shadow-xl shadow-primary/30 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 active:scale-95 group"
             >
-              Has enviado un total de{' '}
-              <span className="font-bold text-gray-900 dark:text-white">
-                {summary.totalSentUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-              </span>
-              {' '}en{' '}
-              <span className="font-bold text-gray-900 dark:text-white">
-                {summary.transactionCount} {summary.transactionCount === 1 ? 'transacción' : 'transacciones'}
-              </span>
-              .
-            </motion.p>
-          )}
+                <span>Realizar un Nuevo Envío</span>
+                <div className="bg-white/20 p-2 rounded-full group-hover:bg-white/30 transition-colors">
+                    {/* ArrowRight Icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </div>
+            </button>
+
+            {/* Quick Actions Grid - Placeholder for future actions */}
+            {/* 
+      <div className="grid grid-cols-2 gap-4">
+        ...
+      </div> 
+      */}
         </div>
-      )}
-    </Card>
-  );
+    );
 };
 
 export default DashboardWelcome;
