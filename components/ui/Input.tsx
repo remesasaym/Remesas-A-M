@@ -1,6 +1,5 @@
-// components/ui/Input.tsx
 import { motion } from 'framer-motion';
-import { InputHTMLAttributes, useState, ReactNode, useId } from 'react';
+import { InputHTMLAttributes, useState, ReactNode, useId, forwardRef } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label: string;
@@ -11,7 +10,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     variant?: 'default' | 'big' | 'clean';
 }
 
-export const Input = ({
+export const Input = forwardRef<HTMLInputElement, InputProps>(({
     label,
     error,
     helperText,
@@ -22,7 +21,7 @@ export const Input = ({
     className = '',
     id,
     ...props
-}: InputProps) => {
+}, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const generatedId = useId();
     const inputId = id || generatedId;
@@ -59,6 +58,7 @@ export const Input = ({
                         {leftIcon}
                         <input
                             {...props}
+                            ref={ref}
                             id={inputId}
                             value={value}
                             className={`
@@ -92,6 +92,7 @@ export const Input = ({
                 {/* Input */}
                 <motion.input
                     {...props}
+                    ref={ref}
                     id={inputId}
                     value={value}
                     onFocus={(e) => {
@@ -162,4 +163,6 @@ export const Input = ({
             )}
         </div>
     );
-};
+});
+
+Input.displayName = 'Input';

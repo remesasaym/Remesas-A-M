@@ -4,9 +4,9 @@ import { ReactNode } from 'react';
 
 interface CardProps extends Omit<HTMLMotionProps<"div">, 'children'> {
     children: ReactNode;
-    variant?: 'default' | 'gradient' | 'colored';
+    variant?: 'default' | 'gradient' | 'colored' | 'glass';
     hover?: boolean;
-    padding?: 'sm' | 'md' | 'lg';
+    padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 
 export const Card = ({
@@ -21,9 +21,11 @@ export const Card = ({
         default: 'bg-white',
         gradient: 'bg-gradient-to-br from-white to-bg-secondary',
         colored: 'bg-gradient-to-br from-primary/5 to-secondary/5',
+        glass: 'bg-white/80 backdrop-blur-md border-white/20',
     };
 
     const paddingStyles = {
+        none: 'p-0',
         sm: 'p-4',
         md: 'p-6',
         lg: 'p-8',

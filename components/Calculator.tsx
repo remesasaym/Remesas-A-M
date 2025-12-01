@@ -559,6 +559,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
                   onChange={handleInputChange}
                   error={formErrors.amount}
                   placeholder="0.00"
+                  autoComplete="off"
                   variant="big"
                 />
               </div>
@@ -691,6 +692,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               value={recipientName}
               onChange={handleInputChange}
               error={formErrors.recipientName}
+              autoComplete="name"
               variant="clean"
             />
 
@@ -718,6 +720,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               value={recipientAccount}
               onChange={handleInputChange}
               error={formErrors.recipientAccount}
+              autoComplete="off"
               variant="clean"
             />
 
@@ -727,6 +730,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               value={recipientId}
               onChange={handleInputChange}
               error={formErrors.recipientId}
+              autoComplete="off"
               variant="clean"
             />
 
