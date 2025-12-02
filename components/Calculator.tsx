@@ -941,14 +941,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
           {step === 1 && renderStep1_Calculator()}
           {step === 2 && renderStep2_Recipient()}
           {step === 3 && renderStep3_Payment()}
-          {step === 4 && (
-            <Card className="flex items-center justify-center p-12">
-              <div className="flex flex-col items-center gap-4 text-text-secondary">
-                <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p>Procesando transacción...</p>
-              </div>
-            </Card>
-          )}
+          {step === 4 && renderStep4_Upload()}
           {step === 5 && renderStep5_Success()}
           {step === 6 && renderStep6_Error()}
         </AnimatePresence>
