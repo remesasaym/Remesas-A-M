@@ -1,5 +1,5 @@
 // src/components/Calculator.tsx
-import React, { useState, useMemo, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useMemo, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { REMITTANCE_FEE_PERCENTAGE } from '../constants';
 import { useExchangeRates } from '../contexts/ExchangeRateContext';
@@ -22,6 +22,7 @@ import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { PageTransition } from './animations/PageTransition';
+import { Stepper } from './ui/Stepper';
 
 interface CalculatorProps {
   user: User;
@@ -194,13 +195,14 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
     // Step 4 State
     const [transactionId, setTransactionId] = useState<string>('');
 
-    const resetCalculator = () => {
+    const resetCalculator = useCallback(() => {
       setStep(1);
       if (COUNTRIES.length > 0) {
         const defaultFrom = COUNTRIES.find(c => c.code === 'US') || COUNTRIES[0];
         const defaultTo = COUNTRIES.find(c => c.code === 'VE') || COUNTRIES[1] || COUNTRIES[0];
         setFromCountryCode(defaultFrom.code);
         setToCountryCode(defaultTo.code);
+        setAmount(String(defaultFrom.minimumSendAmount * 2)); // Default to 2x minimum
       }
       setRecipientName('');
       setRecipientBank('');
@@ -217,7 +219,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
         amountInputRef.current?.focus();
         amountInputRef.current?.select();
       }, 50);
-    };
+    }, [COUNTRIES, onClearPrefill]);
 
     // Effect to set default countries once the rates and country data are loaded
     useEffect(() => {
@@ -231,14 +233,26 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
     }, [COUNTRIES, fromCountryCode, toCountryCode]);
 
     // Effect to pre-fill form if a beneficiary is provided
+    // Effect to pre-fill form if a beneficiary is provided
     useEffect(() => {
       if (prefillData) {
+        // Reset other fields to ensure a clean state
+        setAmount('');
+        setReceiptFile(null);
+        setReceiptUrl(null);
+        setTransactionId('');
+        setFormErrors({});
+        setIsSummaryVisible(false);
+        setSubmissionError(null);
+
+        // Set beneficiary data
         setToCountryCode(prefillData.country_code);
         setRecipientName(prefillData.name);
         setRecipientBank(prefillData.bank);
         setRecipientAccount(prefillData.account_number);
         setRecipientId(prefillData.document_id);
         setSaveBeneficiary(false);
+
         if (!fromCountryCode) {
           const defaultFrom = COUNTRIES.find(c => c.code === 'US') || COUNTRIES[0];
           setFromCountryCode(defaultFrom.code);
@@ -248,6 +262,11 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
           amountInputRef.current?.focus();
           amountInputRef.current?.select();
         }, 100);
+
+        // IMPORTANT: Do not clear prefill immediately here if it causes issues, 
+        // but typically we want to clear it so the dashboard can reappear if they cancel.
+        // The issue was MainApp calling resetCalculator which called onClearPrefill.
+        // Now that MainApp doesn't call resetCalculator for prefill, this should be safe.
         onClearPrefill();
       }
     }, [prefillData, onClearPrefill, COUNTRIES, fromCountryCode]);
@@ -487,7 +506,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
       resetCalculator();
     };
 
-    useImperativeHandle(ref, () => ({ resetCalculator }));
+    useImperativeHandle(ref, () => ({ resetCalculator }), [resetCalculator]);
 
     if (COUNTRIES.length === 0 || areRatesLoading) {
       return (
@@ -500,20 +519,34 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
       );
     }
 
+    // ... (existing imports)
+
+    // ... (existing imports)
+
+    // ... (inside Calculator component)
+
     const renderStep1_Calculator = () => {
       const allowedOriginCodes = ['VE', 'BR', 'CO', 'PE', 'US'];
       const originCountries = COUNTRIES.filter(c => allowedOriginCodes.includes(c.code) || c.region === 'Europe');
+
+      // Define steps for the Stepper
+      const steps = ['Monto', 'Beneficiario', 'Pago', 'Confirmación'];
+
       return (
         <motion.div key="step1" {...stepAnimation} className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setActiveScreen(Screen.Calculator)} // Or welcome if available
-              className="p-3 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition-colors shadow-sm"
-            >
-              <ArrowLeftIcon className="w-6 h-6 text-slate-600" />
-            </button>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Enviar Dinero</h2>
+          {/* Header with Stepper */}
+          <div className="space-y-6 mb-8">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setActiveScreen(Screen.Home)}
+                className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group"
+              >
+                <ArrowLeftIcon className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
+              </button>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Enviar Dinero</h2>
+            </div>
+
+            <Stepper currentStep={1} steps={steps} />
           </div>
 
           {/* Dark Rate Card (Replaces ExchangeRateBanner) */}
@@ -661,6 +694,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
       const destinationCountry = COUNTRIES.find(c => c.code === toCountryCode);
       const availableBanks = destinationCountry?.banks || [];
       const isFormComplete = recipientName && recipientBank && recipientAccount && recipientId;
+      const steps = ['Monto', 'Beneficiario', 'Pago', 'Confirmación'];
 
       const handleProceedToPayment = (e: React.FormEvent) => {
         e.preventDefault();
@@ -678,11 +712,14 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
 
       return (
         <motion.form key="step2" {...stepAnimation} onSubmit={handleProceedToPayment} className="space-y-6">
-          <div className="flex items-center gap-4 mb-2">
-            <button type="button" onClick={() => setStep(1)} className="p-2 rounded-full hover:bg-bg-secondary transition-colors">
-              <ArrowLeftIcon className="w-6 h-6 text-text-primary" />
-            </button>
-            <h2 className="text-2xl font-bold text-text-primary">Datos del Beneficiario</h2>
+          <div className="space-y-6 mb-8">
+            <div className="flex items-center gap-4">
+              <button type="button" onClick={() => setStep(1)} className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group">
+                <ArrowLeftIcon className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
+              </button>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Datos del Beneficiario</h2>
+            </div>
+            <Stepper currentStep={2} steps={steps} />
           </div>
 
           <Card variant="default" padding="lg" className="space-y-6">
@@ -756,13 +793,17 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
     };
 
     const renderStep3_Payment = () => {
+      const steps = ['Monto', 'Beneficiario', 'Pago', 'Confirmación'];
       return (
         <motion.div key="step3" {...stepAnimation} className="space-y-6">
-          <div className="flex items-center gap-4 mb-2">
-            <button type="button" onClick={() => setStep(2)} className="p-2 rounded-full hover:bg-bg-secondary transition-colors">
-              <ArrowLeftIcon className="w-6 h-6 text-text-primary" />
-            </button>
-            <h2 className="text-2xl font-bold text-text-primary">Instrucciones de Pago</h2>
+          <div className="space-y-6 mb-8">
+            <div className="flex items-center gap-4">
+              <button type="button" onClick={() => setStep(2)} className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group">
+                <ArrowLeftIcon className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
+              </button>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Instrucciones de Pago</h2>
+            </div>
+            <Stepper currentStep={3} steps={steps} />
           </div>
 
           <Card variant="default" padding="lg" className="space-y-8">
@@ -780,28 +821,50 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               </div>
             </div>
 
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-text-primary">Subir Comprobante</label>
-              <div className="border-2 border-dashed border-border hover:border-primary rounded-2xl p-8 text-center transition-all cursor-pointer relative bg-bg-secondary/30 group">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                {receiptFile ? (
-                  <div className="flex flex-col items-center gap-3 text-accent-dark font-medium">
-                    <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                      <CheckCircleIcon className="w-6 h-6" />
-                    </div>
-                    <span>{receiptFile.name}</span>
-                    <span className="text-xs text-text-secondary">Click para cambiar</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-3 text-text-secondary group-hover:text-primary transition-colors">
-                    <span>Arrastra tu comprobante aquí o haz click</span>
-                  </div>
-                )}
+            <Button
+              onClick={() => setStep(4)}
+              size="lg"
+              className="w-full py-6 text-xl shadow-xl shadow-primary/30"
+            >
+              Continuar
+            </Button>
+          </Card>
+        </motion.div>
+      );
+    };
+
+    const renderStep4_Upload = () => {
+      const steps = ['Monto', 'Beneficiario', 'Pago', 'Confirmación'];
+      return (
+        <motion.div key="step4" {...stepAnimation} className="space-y-6">
+          <div className="space-y-6 mb-8">
+            <div className="flex items-center gap-4">
+              <button type="button" onClick={() => setStep(3)} className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group">
+                <ArrowLeftIcon className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
+              </button>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Subir Comprobante</h2>
+            </div>
+            <Stepper currentStep={4} steps={steps} />
+          </div>
+
+          <Card variant="default" padding="lg" className="space-y-6">
+            <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer relative group">
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <div>
+                  <p className="font-bold text-lg text-slate-700 dark:text-slate-200">
+                    {receiptFile ? receiptFile.name : 'Haz clic o arrastra tu comprobante aquí'}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">Soporta JPG, PNG o PDF</p>
+                </div>
               </div>
             </div>
 
@@ -810,75 +873,67 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
               disabled={!receiptFile || isUploading}
               isLoading={isUploading}
               size="lg"
-              className="w-full py-6 text-xl shadow-xl shadow-primary/30"
+              className="w-full"
             >
-              {isUploading ? 'Subiendo...' : 'Confirmar y Enviar'}
+              {isUploading ? 'Subiendo...' : 'Verificar y Enviar'}
             </Button>
           </Card>
         </motion.div>
       );
-    };
-
-    const renderStep4_Summary = () => {
-      // This is now handled by the Modal, but keeping a placeholder if needed for state logic
-      return null;
     };
 
     const renderStep5_Success = () => {
+      const steps = ['Monto', 'Beneficiario', 'Pago', 'Confirmación'];
       return (
-        <motion.div key="step5" {...stepAnimation} className="text-center space-y-8 py-12">
-          <div className="w-32 h-32 bg-accent/20 rounded-full flex items-center justify-center mx-auto relative">
-            <div className="absolute inset-0 bg-accent/20 rounded-full animate-ping" />
-            <CheckCircleIcon className="w-16 h-16 text-accent" />
+        <motion.div key="step5" {...stepAnimation} className="space-y-6 text-center py-8">
+          <div className="space-y-6 mb-8">
+            <Stepper currentStep={4} steps={steps} />
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold text-text-primary">¡Envío Exitoso!</h2>
-            <p className="text-text-secondary text-lg">Tu transacción ha sido procesada correctamente.</p>
+          <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircleIcon className="w-12 h-12 text-green-600 dark:text-green-400" />
           </div>
+          <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">¡Envío Exitoso!</h2>
+          <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-8">
+            Tu transacción ha sido registrada correctamente. Te notificaremos cuando el dinero sea depositado.
+          </p>
 
-          <Card variant="glass" padding="lg" className="max-w-sm mx-auto bg-white/50 backdrop-blur-sm border-white/50">
-            <p className="text-sm text-text-secondary uppercase tracking-wider font-bold mb-1">ID de Transacción</p>
-            <p className="text-2xl font-mono font-bold text-primary select-all">{transactionId}</p>
-          </Card>
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl max-w-sm mx-auto mb-8 border border-slate-100 dark:border-slate-700">
+            <p className="text-sm text-slate-500 mb-1">ID de Transacción</p>
+            <p className="font-mono font-bold text-lg text-slate-800 dark:text-white tracking-wider">{transactionId}</p>
+          </div>
 
           <div className="flex flex-col gap-3 max-w-xs mx-auto">
-            <Button onClick={handleNewTransaction} size="lg" className="shadow-lg shadow-primary/20">
+            <Button onClick={handleNewTransaction} size="lg" className="w-full">
               Realizar otro envío
             </Button>
-            <Button variant="ghost" onClick={() => setActiveScreen(Screen.History)}>
-              Ver Historial
+            <Button variant="secondary" onClick={() => setActiveScreen(Screen.History)} className="w-full">
+              Ver historial
             </Button>
           </div>
         </motion.div>
       );
     };
 
-    const renderStep6_Error = () => {
-      return (
-        <motion.div key="step6" {...stepAnimation} className="text-center space-y-8 py-12">
-          <div className="w-32 h-32 bg-error/10 rounded-full flex items-center justify-center mx-auto">
-            <XCircleIcon className="w-16 h-16 text-error" />
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold text-text-primary">Algo salió mal</h2>
-            <p className="text-text-secondary text-lg max-w-md mx-auto">
-              {submissionError || 'No pudimos procesar tu solicitud. Por favor intenta nuevamente.'}
-            </p>
-          </div>
-
-          <div className="flex gap-4 justify-center">
-            <Button variant="secondary" onClick={() => setStep(3)}>
-              Intentar de nuevo
-            </Button>
-            <Button variant="ghost" onClick={handleNewTransaction}>
-              Volver al inicio
-            </Button>
-          </div>
-        </motion.div>
-      );
-    };
+    const renderStep6_Error = () => (
+      <motion.div key="step6" {...stepAnimation} className="space-y-6 text-center py-8">
+        <div className="w-24 h-24 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <XCircleIcon className="w-12 h-12 text-red-600 dark:text-red-400" />
+        </div>
+        <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">Error en el Envío</h2>
+        <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-8">
+          {submissionError || 'Hubo un problema al procesar tu solicitud. Por favor intenta nuevamente.'}
+        </p>
+        <div className="flex flex-col gap-3 max-w-xs mx-auto">
+          <Button onClick={() => setStep(3)} size="lg" className="w-full">
+            Intentar nuevamente
+          </Button>
+          <Button variant="secondary" onClick={() => setActiveScreen(Screen.Home)} className="w-full">
+            Volver al inicio
+          </Button>
+        </div>
+      </motion.div>
+    );
 
     return (
       <PageTransition>

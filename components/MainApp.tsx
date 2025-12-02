@@ -18,7 +18,7 @@ interface MainAppProps {
 }
 
 const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
-  const [activeScreen, setActiveScreen] = useState<Screen>(Screen.Calculator);
+  const [activeScreen, setActiveScreen] = useState<Screen>(Screen.Home);
   const calculatorRef = useRef<CalculatorRef>(null);
   const [shouldResetCalculator, setShouldResetCalculator] = useState(false);
   const [beneficiaryPrefill, setBeneficiaryPrefill] = useState<Beneficiary | null>(null);
@@ -40,18 +40,40 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
     setBeneficiaryPrefill(null);
   };
 
-  const handleNewTransactionClick = () => {
+  const handleNewTransactionClick = (beneficiary?: any) => {
+    if (beneficiary) {
+      // Map the dashboard recipient format to the Beneficiary type expected by Calculator
+      // Note: The dashboard history API returns slightly different fields than the Beneficiary type
+      // We need to map them correctly.
+      const mappedBeneficiary: Beneficiary = {
+        id: beneficiary.id || 'temp-id',
+        created_at: new Date().toISOString(), // Required by type
+        user_id: user.id, // Required by type
+        name: beneficiary.name,
+        country_code: beneficiary.country_code || 'VE', // Default to VE if missing, but should be there
+        bank: beneficiary.bank,
+        account_number: beneficiary.account_number || '',
+        document_id: beneficiary.document_id || ''
+      };
+      setBeneficiaryPrefill(mappedBeneficiary);
+    } else {
+      clearPrefill();
+    }
+
     if (activeScreen === Screen.Calculator) {
-      calculatorRef.current?.resetCalculator();
+      if (!beneficiary) {
+        calculatorRef.current?.resetCalculator();
+      }
     } else {
       setShouldResetCalculator(true);
       setActiveScreen(Screen.Calculator);
     }
-    clearPrefill();
   };
 
   const renderScreen = () => {
     switch (activeScreen) {
+      case Screen.Home:
+        return <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />;
       case Screen.Calculator:
         return <Calculator ref={calculatorRef} user={user} setActiveScreen={setActiveScreen} prefillData={beneficiaryPrefill} onClearPrefill={clearPrefill} />;
       case Screen.Exchange:
@@ -67,7 +89,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
       case Screen.Beneficiaries:
         return <Beneficiaries user={user} onSelectBeneficiary={handleSelectBeneficiary} />;
       default:
-        return <Calculator ref={calculatorRef} user={user} setActiveScreen={setActiveScreen} prefillData={null} onClearPrefill={clearPrefill} />;
+        return <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />;
     }
   };
 
@@ -79,16 +101,15 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
       <div className="fixed bottom-[-10%] left-[-5%] w-96 h-96 bg-warning/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       {/* Navigation (Sidebar for Desktop, Bottom Bar for Mobile) */}
-      <Navigation activeScreen={activeScreen} setActiveScreen={setActiveScreen} user={user} />
+      <Navigation
+        activeScreen={activeScreen}
+        setActiveScreen={setActiveScreen}
+        user={user}
+      />
 
       {/* Main Content Area */}
       <main className="max-w-4xl mx-auto p-6 md:p-12">
         <div className="w-full">
-
-          {/* Show Welcome only on Calculator screen (Home) */}
-          {activeScreen === Screen.Calculator && !beneficiaryPrefill && (
-            <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />
-          )}
 
           <AnimatePresence mode="wait">
             <motion.div

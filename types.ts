@@ -36,6 +36,7 @@ export interface Country {
 }
 
 export enum Screen {
+  Home, // Nueva pantalla de inicio (Dashboard)
   Calculator,
   Exchange,
   // FIX: Added missing Beneficiaries screen to enum.

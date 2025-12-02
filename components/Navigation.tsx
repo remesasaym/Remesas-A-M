@@ -18,8 +18,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeScreen, setActiveS
     };
 
     const navItems = [
-        { id: Screen.Calculator, icon: Home, label: 'Inicio' },
-        { id: Screen.Calculator, icon: Send, label: 'Enviar', action: () => setActiveScreen(Screen.Calculator) },
+        { id: Screen.Home, icon: Home, label: 'Inicio' },
+        { id: Screen.Calculator, icon: Send, label: 'Enviar' },
         { id: Screen.Beneficiaries, icon: Users, label: 'Contactos' },
         { id: Screen.History, icon: Clock, label: 'Historial' },
         { id: Screen.Profile, icon: User, label: 'Perfil' },
@@ -45,9 +45,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeScreen, setActiveS
                         <button
                             key={item.label}
                             onClick={() => item.action ? item.action() : setActiveScreen(item.id)}
-                            className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${activeScreen === item.id && item.label !== 'Enviar'
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110'
-                                    : 'text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/10'
+                            className={`p-3 rounded-full transition-all duration-300 flex-shrink-0 ${activeScreen === item.id
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110'
+                                : 'text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/10'
                                 }`}
                         >
                             <item.icon size={20} />
@@ -76,9 +76,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeScreen, setActiveS
                             <button
                                 key={item.label}
                                 onClick={() => item.action ? item.action() : setActiveScreen(item.id)}
-                                className={`p-3 rounded-2xl flex flex-col items-center gap-1 transition-all duration-300 group relative ${activeScreen === item.id && item.label !== 'Enviar'
-                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                        : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                className={`p-3 rounded-2xl flex flex-col items-center gap-1 transition-all duration-300 group relative ${activeScreen === item.id
+                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                    : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                             >
                                 <item.icon size={24} className={`transition-transform duration-300 ${activeScreen === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
