@@ -52,6 +52,8 @@ const History: React.FC<HistoryProps> = ({ user }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'COMPLETADO' | 'PENDIENTE' | 'RECHAZADO'>('ALL');
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -91,8 +93,13 @@ const History: React.FC<HistoryProps> = ({ user }) => {
     setCurrentPage(1);
   };
 
+  const filteredTransactions = useMemo(() => {
+    if (filterStatus === 'ALL') return transactions;
+    return transactions.filter(t => t.status === filterStatus);
+  }, [transactions, filterStatus]);
+
   const sortedTransactions = useMemo(() => {
-    const sortable = [...transactions];
+    const sortable = [...filteredTransactions];
     sortable.sort((a, b) => {
       const valA = a[sortKey];
       const valB = b[sortKey];
@@ -107,7 +114,7 @@ const History: React.FC<HistoryProps> = ({ user }) => {
 
     if (sortDirection === 'desc') sortable.reverse();
     return sortable;
-  }, [transactions, sortKey, sortDirection]);
+  }, [filteredTransactions, sortKey, sortDirection]);
 
   const paginatedTransactions = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -139,25 +146,43 @@ const History: React.FC<HistoryProps> = ({ user }) => {
 
     if (transactions.length === 0) {
       return (
-        <div className="text-center p-12 text-slate-400">
-          <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        <div className="text-center p-12 text-slate-400 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+          <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-slate-300 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Sin Transacciones</h3>
-          <p className="text-sm mb-6 max-w-xs mx-auto">Aún no has realizado ningún envío. ¡Empieza hoy mismo!</p>
-          <Button variant="primary" className="shadow-xl shadow-primary/30">Empezar ahora</Button>
+          <p className="text-sm text-slate-500 mb-8 max-w-xs mx-auto">Aún no has realizado ningún envío. ¡Tu primera remesa te espera!</p>
+          <Button variant="primary" className="shadow-xl shadow-primary/30 px-8 py-3">
+            Realizar mi primer envío
+          </Button>
         </div>
       );
     }
 
     return (
-      <div className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+      <div className="space-y-6">
+        {/* Quick Filters */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {(['ALL', 'COMPLETADO', 'PENDIENTE', 'RECHAZADO'] as const).map((status) => (
+            <button
+              key={status}
+              onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filterStatus === status
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+            >
+              {status === 'ALL' ? 'Todos' : status.charAt(0) + status.slice(1).toLowerCase()}
+            </button>
+          ))}
+        </div>
+
+        <div className="overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+              <thead className="bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-700">
                 <tr>
                   <SortableHeader label="Fecha" sortKey="created_at" currentSortKey={sortKey} currentDirection={sortDirection} onSort={handleSortAndResetPage} />
                   <SortableHeader label="Destinatario" sortKey="recipient_name" currentSortKey={sortKey} currentDirection={sortDirection} onSort={handleSortAndResetPage} />
@@ -167,14 +192,24 @@ const History: React.FC<HistoryProps> = ({ user }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {paginatedTransactions.map((tx, index) => (
-                  <TransactionRow
-                    key={tx.id}
-                    transaction={tx}
-                    onClick={() => setSelectedTransaction(tx)}
-                    index={index}
-                  />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {paginatedTransactions.length > 0 ? (
+                    paginatedTransactions.map((tx, index) => (
+                      <TransactionRow
+                        key={tx.id}
+                        transaction={tx}
+                        onClick={() => setSelectedTransaction(tx)}
+                        index={index}
+                      />
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-12 text-center text-slate-400">
+                        No se encontraron transacciones con este filtro.
+                      </td>
+                    </tr>
+                  )}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
