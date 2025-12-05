@@ -100,6 +100,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                     ref={ref}
                     id={inputId}
                     value={value}
+                    placeholder={variant === 'default' && !isFocused ? '' : props.placeholder}
                     onFocus={(e) => {
                         setIsFocused(true);
                         props.onFocus?.(e);

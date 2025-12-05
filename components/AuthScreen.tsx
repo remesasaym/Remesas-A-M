@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import LogoIcon from './icons/LogoIcon';
-import Card from './common/Card';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
 import { supabase } from '../supabaseClient';
 import PhoneNumberInput from './common/PhoneNumberInput';
-import Spinner from './common/Spinner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AuthScreen: React.FC = () => {
@@ -15,12 +16,12 @@ const AuthScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false); // Nuevo estado para "Recordar sesión"
+  const [rememberMe, setRememberMe] = useState(false);
 
   const switchView = (newView: 'login' | 'register' | 'forgotPassword') => {
     setError(null);
     setAuthMessage(null);
-    setPassword(''); // Limpiar contraseña al cambiar de vista
+    setPassword('');
     setView(newView);
   }
 
@@ -91,30 +92,24 @@ const AuthScreen: React.FC = () => {
     if (view === 'forgotPassword') {
       return (
         <form onSubmit={handlePasswordReset} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
-              Correo Electrónico
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="tu@email.com"
-              autoComplete="email"
-              required
-            />
-          </div>
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors duration-300 disabled:bg-indigo-400 dark:disabled:bg-indigo-800/50 disabled:cursor-wait"
-            >
-              {loading ? <Spinner className="w-5 h-5" /> : 'Enviar Enlace de Recuperación'}
-            </button>
-          </div>
+          <Input
+            label="Correo Electrónico"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+            autoComplete="email"
+            required
+            variant="default"
+          />
+          <Button
+            type="submit"
+            isLoading={loading}
+            className="w-full"
+            variant="primary"
+          >
+            Enviar Enlace de Recuperación
+          </Button>
         </form>
       );
     }
@@ -123,76 +118,60 @@ const AuthScreen: React.FC = () => {
       <form onSubmit={handleAuth} className="space-y-6">
         {view === 'register' && (
           <>
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
-                Nombre Completo
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="John Doe"
-                autoComplete="name"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                Número de Teléfono <span className="text-gray-400">(Opcional)</span>
-              </label>
-              <PhoneNumberInput
-                id="phone"
-                value={phone}
-                onChange={setPhone}
-                autoComplete="tel"
-              />
-            </div>
+            <Input
+              label="Nombre Completo"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="John Doe"
+              autoComplete="name"
+              required
+              variant="default"
+            />
+            <PhoneNumberInput
+              id="phone"
+              value={phone}
+              onChange={setPhone}
+              autoComplete="tel"
+              label="Número de Teléfono (Opcional)"
+            />
           </>
         )}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
-            Correo Electrónico
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="tu@email.com"
-            autoComplete="email"
-            required
-          />
-        </div>
-        <div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
-              Contraseña
-            </label>
-            {view === 'login' && (
-              <div className="text-sm">
-                <button
-                  type="button"
-                  onClick={() => switchView('forgotPassword')}
-                  className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
-            )}
-          </div>
-          <input
+
+        <Input
+          label="Correo Electrónico"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="tu@email.com"
+          autoComplete="email"
+          required
+          variant="default"
+        />
+
+        <div className="space-y-2">
+          <Input
+            label="Contraseña"
             type="password"
-            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded-md shadow-sm py-3 px-4 text-gray-800 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="••••••••"
             autoComplete={view === 'register' ? 'new-password' : 'current-password'}
             required
+            variant="default"
           />
+
+          {view === 'login' && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => switchView('forgotPassword')}
+                className="text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+          )}
         </div>
 
         {view === 'login' && (
@@ -203,37 +182,22 @@ const AuthScreen: React.FC = () => {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:checked:bg-indigo-600 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600 dark:bg-slate-700 rounded transition-colors"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600 dark:text-gray-300">
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-600 dark:text-slate-300">
               Recordar sesión
             </label>
           </div>
         )}
 
-        <div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors duration-300 disabled:bg-indigo-400 dark:disabled:bg-indigo-800/50 disabled:cursor-wait"
-          >
-            {loading && view === 'login' ? (
-              <>
-                <Spinner className="w-5 h-5 mr-3" />
-                <span>Verificando credenciales...</span>
-              </>
-            ) : loading ? (
-              <>
-                <Spinner className="w-5 h-5 mr-3" />
-                <span>{view === 'login' ? 'Iniciando...' : 'Creando...'}</span>
-              </>
-            ) : view === 'login' ? (
-              <span>Iniciar Sesión</span>
-            ) : (
-              <span>Crear Cuenta</span>
-            )}
-          </button>
-        </div>
+        <Button
+          type="submit"
+          isLoading={loading}
+          className="w-full py-4 text-lg shadow-lg shadow-primary/20"
+          variant="primary"
+        >
+          {view === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+        </Button>
 
         <AnimatePresence>
           {loading && view === 'login' && (
@@ -245,7 +209,7 @@ const AuthScreen: React.FC = () => {
                 repeat: Infinity,
                 ease: 'linear' as const
               }}
-              className="h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full mt-2"
+              className="h-1 bg-primary rounded-full mt-4 mx-auto w-1/2 opacity-50"
             />
           )}
         </AnimatePresence>
@@ -255,32 +219,81 @@ const AuthScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-100 via-indigo-200/50 to-gray-100 dark:from-gray-900 dark:via-purple-900/50 dark:to-gray-900">
-      <Card className="w-full max-w-md dark:bg-slate-900">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500">
+
+      {/* Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/5 rounded-full blur-3xl animate-pulse delay-700" />
+      </div>
+
+      <Card variant="glass" padding="lg" className="w-full max-w-md relative z-10 border-white/40 dark:border-white/5 shadow-2xl shadow-indigo-500/10 dark:shadow-black/40">
         <div className="text-center mb-8">
-          <LogoIcon className="h-16 w-auto mx-auto" />
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mt-4">{renderTitle()}</h1>
-          <p className="text-gray-500 dark:text-gray-400">{renderSubtitle()}</p>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          >
+            <LogoIcon className="h-16 w-auto mx-auto drop-shadow-md" />
+          </motion.div>
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white mt-6 tracking-tight">{renderTitle()}</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">{renderSubtitle()}</p>
+          </motion.div>
         </div>
 
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-        {authMessage && <p className="text-green-600 dark:text-green-400 text-sm text-center mb-4">{authMessage}</p>}
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm text-center p-3 rounded-xl mb-6 border border-red-100 dark:border-red-900/30 font-medium"
+            >
+              {error}
+            </motion.div>
+          )}
+          {authMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm text-center p-3 rounded-xl mb-6 border border-green-100 dark:border-green-900/30 font-medium"
+            >
+              {authMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {renderFormContent()}
+        <motion.div
+          key={view}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}
+        >
+          {renderFormContent()}
+        </motion.div>
 
-        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          {view === 'login' && <span>¿No tienes cuenta?</span>}
-          {view === 'register' && <span>¿Ya tienes una cuenta?</span>}
-          {view === 'forgotPassword' && <span>¿Recordaste tu contraseña?</span>}
-          <button
-            onClick={() => switchView(view === 'login' ? 'register' : 'login')}
-            className="ml-1 font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300"
-          >
-            {view === 'login' && <span>Regístrate</span>}
-            {view === 'register' && <span>Inicia Sesión</span>}
-            {view === 'forgotPassword' && <span>Volver a Iniciar Sesión</span>}
-          </button>
-        </p>
+        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700/50 text-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {view === 'login' && <span>¿No tienes cuenta?</span>}
+            {view === 'register' && <span>¿Ya tienes una cuenta?</span>}
+            {view === 'forgotPassword' && <span>¿Recordaste tu contraseña?</span>}
+            <button
+              onClick={() => switchView(view === 'login' ? 'register' : 'login')}
+              className="ml-2 font-bold text-primary hover:text-primary-dark transition-colors"
+            >
+              {view === 'login' && <span>Regístrate</span>}
+              {view === 'register' && <span>Inicia Sesión</span>}
+              {view === 'forgotPassword' && <span>Volver a Iniciar Sesión</span>}
+            </button>
+          </p>
+        </div>
       </Card>
     </div>
   );
