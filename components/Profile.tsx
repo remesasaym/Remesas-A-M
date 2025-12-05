@@ -225,50 +225,56 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     if (user.isVerified) {
       return (
         <div className="space-y-8">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          <div className="flex items-center gap-6 p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div className="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-primary/20 ring-4 ring-white dark:ring-slate-800">
               {user.fullName?.charAt(0) || user.email.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-text-primary">{user.fullName || 'Usuario'}</h2>
-              <p className="text-text-secondary">{user.email}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-3xl font-bold text-slate-800 dark:text-white">{user.fullName || 'Usuario'}</h2>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 text-xs font-bold uppercase tracking-wide border border-teal-100 dark:border-teal-900/50">
+                  <CheckCircleIcon className="w-3.5 h-3.5" />
+                  Verificado
+                </span>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">{user.email}</p>
             </div>
           </div>
 
           <VerificationStatus />
 
           <Card variant="default" padding="lg" className="space-y-6">
-            <h3 className="text-lg font-bold text-text-primary border-b border-border pb-4">Información Personal</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">Información Personal</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <p className="text-sm text-text-secondary">Nombre Completo</p>
-                <p className="font-medium text-text-primary">{user.fullName}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Nombre Completo</p>
+                <p className="font-medium text-lg text-slate-800 dark:text-white">{user.fullName}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-text-secondary">Correo Electrónico</p>
-                <p className="font-medium text-text-primary">{user.email}</p>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Correo Electrónico</p>
+                <p className="font-medium text-lg text-slate-800 dark:text-white">{user.email}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-text-secondary">País de Residencia</p>
-                <p className="font-medium text-text-primary">{userCountry || 'Cargando...'}</p>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">País de Residencia</p>
+                <p className="font-medium text-lg text-slate-800 dark:text-white">{userCountry || 'Cargando...'}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-text-secondary">Número de Teléfono</p>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Número de Teléfono</p>
                 {!isEditingPhone ? (
                   <div className="flex items-center gap-3">
-                    <p className="font-medium text-text-primary">{phone || 'No establecido'}</p>
-                    <button onClick={() => setIsEditingPhone(true)} className="text-xs font-bold text-primary hover:underline">Editar</button>
+                    <p className="font-medium text-lg text-slate-800 dark:text-white">{phone || 'No establecido'}</p>
+                    <button onClick={() => setIsEditingPhone(true)} className="text-sm font-bold text-primary hover:text-primary-dark transition-colors">Editar</button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 mt-1">
                     <PhoneNumberInput
                       value={phone}
                       onChange={setPhone}
-                      className="bg-bg-secondary border-border rounded-lg"
+                      className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl"
                     />
                     <Button
                       size="sm"
@@ -288,7 +294,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                   </div>
                 )}
                 {saveMessage && (
-                  <p className={`text-xs mt-1 ${saveMessage.type === 'success' ? 'text-success' : 'text-error'}`}>{saveMessage.text}</p>
+                  <p className={`text-xs mt-1 ${saveMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{saveMessage.text}</p>
                 )}
               </div>
             </div>
@@ -300,10 +306,13 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     switch (step) {
       case VerificationStep.NotStarted:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-text-primary mb-2">Verificación de Identidad</h2>
-              <p className="text-text-secondary">Completa tu perfil para desbloquear todas las funciones.</p>
+          <div className="space-y-8">
+            <div className="text-center mb-10">
+              <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                <span className="text-4xl">🛡️</span>
+              </div>
+              <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-3">Verificación de Identidad</h2>
+              <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-lg">Completa tu perfil para desbloquear todas las funciones y aumentar tus límites.</p>
             </div>
             <VerificationStatus
               onStart={() => setStep(VerificationStep.FormDetails)}
@@ -316,16 +325,16 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
         return (
           <form onSubmit={handleFormSubmit} className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
-              <button type="button" onClick={() => setStep(VerificationStep.NotStarted)} className="p-2 rounded-full hover:bg-bg-secondary transition-colors">
-                <ArrowLeftIcon className="w-6 h-6 text-text-primary" />
+              <button type="button" onClick={() => setStep(VerificationStep.NotStarted)} className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group">
+                <ArrowLeftIcon className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
               </button>
               <div>
-                <h2 className="text-2xl font-bold text-text-primary">Datos Personales</h2>
-                <p className="text-text-secondary text-sm">Paso 1 de 2</p>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Datos Personales</h2>
+                <p className="text-slate-500 text-sm font-medium">Paso 1 de 2</p>
               </div>
             </div>
 
-            <Card variant="default" padding="lg" className="space-y-6 rounded-[2rem] shadow-lg shadow-slate-200/50 border-slate-100">
+            <Card variant="default" padding="lg" className="space-y-6">
               <Input
                 label="Nombre Completo"
                 name="fullName"
@@ -333,10 +342,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 onChange={handleInputChange}
                 autoComplete="name"
                 required
+                variant="clean"
               />
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-text-secondary ml-1">País de Residencia</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">País de Residencia</label>
                 <div className="relative">
                   <select
                     name="country"
@@ -344,11 +354,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                     onChange={handleInputChange}
                     required
                     autoComplete="country-name"
-                    className="w-full px-4 py-3 bg-white border-2 border-border rounded-2xl appearance-none focus:outline-none focus:border-primary transition-colors"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-slate-800 dark:text-white"
                   >
                     {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary">
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
@@ -361,6 +371,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 onChange={handleInputChange}
                 required
                 placeholder="Número de documento"
+                variant="clean"
               />
 
               <Input
@@ -370,14 +381,15 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 onChange={handleInputChange}
                 autoComplete="street-address"
                 required
+                variant="clean"
               />
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-text-secondary ml-1">Número de Teléfono</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">Número de Teléfono</label>
                 <PhoneNumberInput
                   value={formData.phone}
                   onChange={handlePhoneInputChange}
-                  className="bg-white border-2 border-border rounded-2xl focus-within:border-primary transition-colors"
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl"
                   autoComplete="tel"
                   required
                 />
@@ -386,7 +398,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full mt-4 py-4 text-lg shadow-xl shadow-primary/30"
+                className="w-full mt-6 py-4 text-lg shadow-xl shadow-primary/30"
                 disabled={!formData.documentId || !formData.address || !formData.fullName || !formData.phone}
               >
                 Continuar
@@ -398,12 +410,12 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
-              <button onClick={() => setStep(VerificationStep.FormDetails)} className="p-2 rounded-full hover:bg-bg-secondary transition-colors">
-                <ArrowLeftIcon className="w-6 h-6 text-text-primary" />
+              <button onClick={() => setStep(VerificationStep.FormDetails)} className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group">
+                <ArrowLeftIcon className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
               </button>
               <div>
-                <h2 className="text-2xl font-bold text-text-primary">Documentos</h2>
-                <p className="text-text-secondary text-sm">Paso 2 de 2</p>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Documentos</h2>
+                <p className="text-slate-500 text-sm font-medium">Paso 2 de 2</p>
               </div>
             </div>
 
@@ -437,7 +449,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               />
 
               {formError && (
-                <div className="p-4 bg-error/10 rounded-xl text-error text-center font-medium border border-error/20">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl text-red-600 dark:text-red-400 text-center font-medium border border-red-100 dark:border-red-900/30">
                   {formError}
                 </div>
               )}
@@ -445,7 +457,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <Button
                 onClick={handleFinalSubmit}
                 size="lg"
-                className="w-full mt-4 py-4 text-lg shadow-xl shadow-primary/30"
+                className="w-full mt-6 py-4 text-lg shadow-xl shadow-primary/30"
                 disabled={!docUrls.id || !docUrls.address || !docUrls.selfie || isVerificationDisabled}
               >
                 Enviar Verificación
@@ -457,8 +469,8 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
         return (
           <Card className="text-center py-16 flex flex-col items-center justify-center">
             <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-8" />
-            <h3 className="text-2xl font-bold text-text-primary mb-2">Verificando con IA</h3>
-            <p className="text-text-secondary max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Verificando con IA</h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
               Estamos analizando tus documentos y biometría para verificar tu identidad. Esto solo tomará unos segundos.
             </p>
           </Card>
@@ -468,7 +480,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
   return (
     <PageTransition>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {renderContent()}
       </div>
     </PageTransition>
@@ -481,12 +493,12 @@ const VerificationStatus: React.FC<{ onStart?: () => void; status?: string; data
   const isRejected = status === 'rejected';
 
   const styles = isVerified
-    ? { bg: 'bg-gradient-to-br from-success/10 to-success/5', border: 'border-success/20', icon: 'text-success', title: 'text-success-dark' }
+    ? { bg: 'bg-teal-50 dark:bg-teal-900/10', border: 'border-teal-100 dark:border-teal-900/30', icon: 'text-teal-600 dark:text-teal-400', title: 'text-teal-800 dark:text-teal-300' }
     : isPending
-      ? { bg: 'bg-gradient-to-br from-warning/10 to-warning/5', border: 'border-warning/20', icon: 'text-warning', title: 'text-warning-dark' }
+      ? { bg: 'bg-amber-50 dark:bg-amber-900/10', border: 'border-amber-100 dark:border-amber-900/30', icon: 'text-amber-600 dark:text-amber-400', title: 'text-amber-800 dark:text-amber-300' }
       : isRejected
-        ? { bg: 'bg-gradient-to-br from-error/10 to-error/5', border: 'border-error/20', icon: 'text-error', title: 'text-error' }
-        : { bg: 'bg-gradient-to-br from-primary/10 to-primary/5', border: 'border-primary/20', icon: 'text-primary', title: 'text-primary-dark' };
+        ? { bg: 'bg-red-50 dark:bg-red-900/10', border: 'border-red-100 dark:border-red-900/30', icon: 'text-red-600 dark:text-red-400', title: 'text-red-800 dark:text-red-300' }
+        : { bg: 'bg-slate-50 dark:bg-slate-800/50', border: 'border-slate-100 dark:border-slate-700', icon: 'text-primary', title: 'text-slate-800 dark:text-white' };
 
   const icon = isVerified ? <CheckCircleIcon className="w-8 h-8" />
     : isPending ? <Spinner className="w-8 h-8" />
@@ -504,19 +516,19 @@ const VerificationStatus: React.FC<{ onStart?: () => void; status?: string; data
         : 'Para cumplir con las regulaciones y garantizar la seguridad, necesitamos verificar tu identidad antes de realizar envíos.';
 
   return (
-    <Card className={`${styles.bg} border ${styles.border} p-6`}>
-      <div className="flex items-start gap-4">
-        <div className={`p-3 bg-white/80 rounded-full shadow-sm ${styles.icon}`}>
+    <Card className={`${styles.bg} border ${styles.border} p-8`}>
+      <div className="flex items-start gap-6">
+        <div className={`p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm ${styles.icon}`}>
           {icon}
         </div>
         <div className="flex-1">
-          <h3 className={`text-lg font-bold mb-1 ${styles.title}`}>{title}</h3>
-          <p className="text-text-secondary text-sm leading-relaxed">{subtitle}</p>
+          <h3 className={`text-xl font-bold mb-2 ${styles.title}`}>{title}</h3>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{subtitle}</p>
         </div>
       </div>
       {!isVerified && !isPending && (
-        <div className="mt-6 flex justify-end">
-          <Button onClick={onStart} variant={isRejected ? 'secondary' : 'primary'}>
+        <div className="mt-8 flex justify-end">
+          <Button onClick={onStart} variant={isRejected ? 'secondary' : 'primary'} size="lg" className="shadow-lg shadow-primary/20">
             {isRejected ? 'Intentar de Nuevo' : 'Iniciar Verificación'}
           </Button>
         </div>
@@ -575,22 +587,26 @@ const UploadItem: React.FC<{
   };
 
   return (
-    <div className={`border-2 border-dashed rounded-2xl p-4 transition-all ${isUploaded ? 'border-success/50 bg-success/5' : 'border-border hover:border-primary/50 hover:bg-bg-secondary'
+    <div className={`group relative border rounded-2xl p-5 transition-all duration-300 ${isUploaded
+      ? 'border-teal-200 bg-teal-50/50 dark:border-teal-900/30 dark:bg-teal-900/10'
+      : 'border-slate-200 dark:border-slate-700 hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-800/50'
       }`}>
       {isCameraOpen && <CameraModal onCapture={handleFileSelect} onClose={() => setIsCameraOpen(false)} />}
 
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isUploaded ? 'bg-success/20 text-success-dark' : 'bg-bg-tertiary text-text-secondary'
+      <div className="flex items-center gap-5">
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${isUploaded
+          ? 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400'
+          : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 group-hover:bg-white group-hover:text-primary group-hover:shadow-md'
           }`}>
-          {isUploading ? <Spinner className="w-6 h-6" /> : <DocumentIcon className="w-6 h-6" />}
+          {isUploading ? <Spinner className="w-6 h-6" /> : <DocumentIcon className="w-7 h-7" />}
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <p className="font-bold text-text-primary truncate">{title}</p>
-            {isUploaded && <CheckCircleIcon className="w-5 h-5 text-success" />}
+            <p className="font-bold text-slate-800 dark:text-white truncate text-lg">{title}</p>
+            {isUploaded && <CheckCircleIcon className="w-5 h-5 text-teal-500" />}
           </div>
-          <p className="text-xs text-text-secondary truncate">{isUploaded ? 'Documento cargado correctamente' : description}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{isUploaded ? 'Documento cargado correctamente' : description}</p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -603,24 +619,24 @@ const UploadItem: React.FC<{
           />
 
           {!isUploaded && !isUploading && (
-            <>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsCameraOpen(true)}
-                className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                className="p-2.5 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
                 title="Usar cámara"
               >
                 <CameraIcon className="w-6 h-6" />
               </button>
-              <Button size="sm" onClick={triggerFileInput}>
+              <Button size="sm" onClick={triggerFileInput} className="shadow-md shadow-primary/20">
                 Subir
               </Button>
-            </>
+            </div>
           )}
 
           {isUploaded && (
             <button
               onClick={onRemove}
-              className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors"
+              className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
               title="Eliminar"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -629,7 +645,7 @@ const UploadItem: React.FC<{
         </div>
       </div>
 
-      {error && <p className="text-xs text-error mt-2 pl-16">{error}</p>}
+      {error && <p className="text-xs text-red-500 mt-3 pl-20 font-medium">{error}</p>}
     </div>
   );
 }

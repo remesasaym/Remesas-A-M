@@ -4,7 +4,7 @@ export const COUNTRIES: Country[] = [
   // Latinoamérica
   { name: 'Argentina', code: 'AR', dialCode: '+54', banks: [{ name: 'Banco Nación', type: 'National' }, { name: 'Galicia', type: 'National' }, { name: 'BBVA Argentina', type: 'National' }, { name: 'Mercado Pago', type: 'National' }], currency: 'ARS', exchangeRateToUSD: 1250.00, region: 'LatAm', minimumSendAmount: 4000 },
   { name: 'Bolivia', code: 'BO', dialCode: '+591', banks: [], currency: 'BOB', exchangeRateToUSD: 6.91, region: 'LatAm', minimumSendAmount: 50 },
-  { name: 'Brasil', code: 'BR', dialCode: '+55', banks: [], currency: 'BRL', exchangeRateToUSD: 5.40, region: 'LatAm', minimumSendAmount: 50 },
+  { name: 'Brasil', code: 'BR', dialCode: '+55', banks: [{ name: 'Banco do Brasil', type: 'National' }, { name: 'Itaú', type: 'National' }, { name: 'Bradesco', type: 'National' }, { name: 'Nubank', type: 'National' }, { name: 'Pix', type: 'National' }], currency: 'BRL', exchangeRateToUSD: 5.40, region: 'LatAm', minimumSendAmount: 50 },
   { name: 'Chile', code: 'CL', dialCode: '+56', banks: [{ name: 'Banco de Chile', type: 'National' }, { name: 'BancoEstado', type: 'National' }, { name: 'Santander Chile', type: 'National' }], currency: 'CLP', exchangeRateToUSD: 940.00, region: 'LatAm', minimumSendAmount: 4000 },
   { name: 'Colombia', code: 'CO', dialCode: '+57', banks: [{ name: 'Bancolombia', type: 'National' }, { name: 'Davivienda', type: 'National' }, { name: 'Nequi', type: 'National' }, { name: 'Daviplata', type: 'National' }, { name: 'Banco de Bogotá', type: 'National' }], currency: 'COP', exchangeRateToUSD: 3950.00, region: 'LatAm', minimumSendAmount: 25000 },
   { name: 'Costa Rica', code: 'CR', dialCode: '+506', banks: [], currency: 'CRC', exchangeRateToUSD: 525.00, region: 'LatAm', minimumSendAmount: 5000 },
@@ -25,12 +25,12 @@ export const COUNTRIES: Country[] = [
   { name: 'Canadá', code: 'CA', dialCode: '+1', banks: [], currency: 'CAD', exchangeRateToUSD: 1.37, region: 'North America', minimumSendAmount: 25 },
   { name: 'EE.UU.', code: 'US', dialCode: '+1', banks: [{ name: 'Bank of America', type: 'International' }, { name: 'Chase', type: 'International' }, { name: 'Wells Fargo', type: 'International' }, { name: 'Citibank', type: 'International' }, { name: 'Zelle', type: 'International' }], currency: 'USD', exchangeRateToUSD: 1.00, region: 'North America', minimumSendAmount: 20 },
   // Europa
-  { name: 'Alemania', code: 'DE', dialCode: '+49', banks: [], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
+  { name: 'Alemania', code: 'DE', dialCode: '+49', banks: [{ name: 'Deutsche Bank', type: 'International' }, { name: 'Commerzbank', type: 'International' }, { name: 'SEPA Transfer', type: 'International' }, { name: 'N26', type: 'International' }, { name: 'Revolut', type: 'International' }], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
   { name: 'España', code: 'ES', dialCode: '+34', banks: [{ name: 'SEPA Transfer', type: 'International' }, { name: 'Revolut', type: 'International' }, { name: 'Wise', type: 'International' }], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
-  { name: 'Francia', code: 'FR', dialCode: '+33', banks: [], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
-  { name: 'Italia', code: 'IT', dialCode: '+39', banks: [], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
-  { name: 'Portugal', code: 'PT', dialCode: '+351', banks: [], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
-  { name: 'Reino Unido', code: 'GB', dialCode: '+44', banks: [], currency: 'GBP', exchangeRateToUSD: 0.79, region: 'Europe', minimumSendAmount: 15 },
+  { name: 'Francia', code: 'FR', dialCode: '+33', banks: [{ name: 'BNP Paribas', type: 'International' }, { name: 'Crédit Agricole', type: 'International' }, { name: 'SEPA Transfer', type: 'International' }, { name: 'Revolut', type: 'International' }, { name: 'Wise', type: 'International' }], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
+  { name: 'Italia', code: 'IT', dialCode: '+39', banks: [{ name: 'Intesa Sanpaolo', type: 'International' }, { name: 'UniCredit', type: 'International' }, { name: 'SEPA Transfer', type: 'International' }, { name: 'Revolut', type: 'International' }], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
+  { name: 'Portugal', code: 'PT', dialCode: '+351', banks: [{ name: 'Caixa Geral de Depósitos', type: 'International' }, { name: 'Millennium BCP', type: 'International' }, { name: 'SEPA Transfer', type: 'International' }, { name: 'Revolut', type: 'International' }], currency: 'EUR', exchangeRateToUSD: 0.92, region: 'Europe', minimumSendAmount: 20 },
+  { name: 'Reino Unido', code: 'GB', dialCode: '+44', banks: [{ name: 'Barclays', type: 'International' }, { name: 'HSBC UK', type: 'International' }, { name: 'Lloyds Bank', type: 'International' }, { name: 'Revolut', type: 'International' }, { name: 'Wise', type: 'International' }], currency: 'GBP', exchangeRateToUSD: 0.79, region: 'Europe', minimumSendAmount: 15 },
 ];
 
 // ===== NUEVO MODELO DE COMISIONES (Híbrido) =====
