@@ -234,7 +234,7 @@ const AuthScreen: React.FC = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
           >
-            <LogoIcon className="h-16 w-auto mx-auto drop-shadow-md" />
+            <LogoIcon className="h-32 w-auto mx-auto drop-shadow-md" />
           </motion.div>
           <motion.div
             initial={{ y: 10, opacity: 0 }}
