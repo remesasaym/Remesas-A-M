@@ -95,8 +95,8 @@ const TransactionSummaryModal: React.FC<TransactionSummaryModalProps> = ({ detai
         className="w-full max-w-md"
       >
         <Card variant="default" padding="none" className="overflow-hidden">
-          <header className="p-4 flex justify-between items-center border-b border-border bg-bg-secondary/50">
-            <h3 className="text-lg font-bold text-text-primary">Confirmar Envío</h3>
+          <header className="p-4 flex justify-between items-center border-b border-border bg-bg-secondary/50 dark:bg-slate-800/50 dark:border-slate-700">
+            <h3 className="text-lg font-bold text-text-primary dark:text-white">Confirmar Envío</h3>
             <button onClick={onClose} className="p-2 rounded-full text-text-secondary hover:bg-bg-tertiary transition-colors">
               <XIcon className="w-5 h-5" />
             </button>
@@ -104,7 +104,7 @@ const TransactionSummaryModal: React.FC<TransactionSummaryModalProps> = ({ detai
 
           <div className="p-6 space-y-6">
             {/* Visual Flow */}
-            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-4 rounded-2xl flex items-center justify-between border border-primary/10">
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 p-4 rounded-2xl flex items-center justify-between border border-primary/10 dark:border-primary/20">
               <div className="flex items-center gap-3">
                 <FlagIcon countryCode={details.fromCountryCode} className="w-8 h-8 rounded-full shadow-sm" />
                 <div>
@@ -114,7 +114,7 @@ const TransactionSummaryModal: React.FC<TransactionSummaryModalProps> = ({ detai
                   </p>
                 </div>
               </div>
-              <div className="bg-white p-2 rounded-full shadow-sm">
+              <div className="bg-white dark:bg-slate-800 p-2 rounded-full shadow-sm">
                 <ArrowRightIcon className="w-5 h-5 text-primary" />
               </div>
               <div className="flex items-center gap-3 text-right">
@@ -135,7 +135,7 @@ const TransactionSummaryModal: React.FC<TransactionSummaryModalProps> = ({ detai
             </div>
           </div>
 
-          <footer className="p-4 bg-bg-secondary/30 flex gap-3">
+          <footer className="p-4 bg-bg-secondary/30 dark:bg-slate-800/30 flex gap-3">
             <Button
               variant="ghost"
               onClick={onClose}
@@ -740,7 +740,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
                   name="recipientBank"
                   value={recipientBank}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl appearance-none focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl appearance-none focus:outline-none focus:border-primary transition-colors text-slate-800 dark:text-white"
                 >
                   <option value="" disabled>Selecciona un banco</option>
                   {availableBanks.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
@@ -807,16 +807,16 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
           </div>
 
           <Card variant="default" padding="lg" className="space-y-8">
-            <div className="bg-secondary/10 p-6 rounded-2xl border border-secondary/20">
-              <h3 className="font-bold text-secondary-dark mb-4 text-lg">Cuenta Bancaria (BCP)</h3>
-              <div className="space-y-2 text-text-primary">
+            <div className="bg-secondary/10 dark:bg-secondary/20 p-6 rounded-2xl border border-secondary/20 dark:border-secondary/30">
+              <h3 className="font-bold text-secondary-dark dark:text-secondary-light mb-4 text-lg">Cuenta Bancaria (BCP)</h3>
+              <div className="space-y-2 text-text-primary dark:text-white">
                 <p>Titular: <span className="font-semibold">Remesas A&M SAC</span></p>
-                <p>Cuenta: <span className="font-mono font-semibold bg-white/50 px-2 py-1 rounded">193-12345678-0-01</span></p>
-                <p>CCI: <span className="font-mono font-semibold bg-white/50 px-2 py-1 rounded">002-193-0012345678001-14</span></p>
+                <p>Cuenta: <span className="font-mono font-semibold bg-white/50 dark:bg-black/20 px-2 py-1 rounded">193-12345678-0-01</span></p>
+                <p>CCI: <span className="font-mono font-semibold bg-white/50 dark:bg-black/20 px-2 py-1 rounded">002-193-0012345678001-14</span></p>
               </div>
-              <div className="mt-6 pt-4 border-t border-secondary/20">
-                <p className="text-xl font-bold text-text-primary">
-                  Monto a pagar: <span className="text-secondary-dark">{total.toFixed(2)} {fromCurrency}</span>
+              <div className="mt-6 pt-4 border-t border-secondary/20 dark:border-secondary/30">
+                <p className="text-xl font-bold text-text-primary dark:text-white">
+                  Monto a pagar: <span className="text-secondary-dark dark:text-secondary-light">{total.toFixed(2)} {fromCurrency}</span>
                 </p>
               </div>
             </div>

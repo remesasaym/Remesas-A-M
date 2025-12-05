@@ -25,6 +25,15 @@
   --color-text-primary: var(--color-stitch-text);
 }
 
+.dark {
+  --color-stitch-bg: #0f172a; /* slate-900 */
+  --color-stitch-text: #f1f5f9; /* slate-100 */
+  --color-stitch-card: #1e293b; /* slate-800 */
+  
+  --color-bg-primary: var(--color-stitch-bg);
+  --color-text-primary: var(--color-stitch-text);
+}
+
 html,
 body {
   height: 100%;

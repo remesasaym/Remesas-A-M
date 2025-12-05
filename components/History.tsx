@@ -170,8 +170,8 @@ const History: React.FC<HistoryProps> = ({ user }) => {
               key={status}
               onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
               className={`px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filterStatus === status
-                  ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
             >
               {status === 'ALL' ? 'Todos' : status.charAt(0) + status.slice(1).toLowerCase()}

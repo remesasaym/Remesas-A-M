@@ -29,9 +29,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
     // Variant styles
     const containerStyles = {
-        default: "bg-gray-50 border border-gray-200 rounded-2xl",
+        default: "bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl",
         big: "bg-transparent border-none", // For calculator main amount
-        clean: "bg-white border border-slate-100 rounded-xl" // For simple forms
+        clean: "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl" // For simple forms
     };
 
     const inputStyles = {
@@ -81,6 +81,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
     return (
         <div className={`w-full ${className}`}>
+            {variant === 'clean' && (
+                <label htmlFor={inputId} className="block text-sm font-medium text-slate-600 dark:text-slate-400 ml-1 mb-1">
+                    {label}
+                </label>
+            )}
             <div className="relative">
                 {/* Left Icon */}
                 {leftIcon && (

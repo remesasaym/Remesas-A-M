@@ -18,10 +18,10 @@ export const Card = ({
     ...props
 }: CardProps) => {
     const variantStyles = {
-        default: 'bg-white',
-        gradient: 'bg-gradient-to-br from-white to-bg-secondary',
-        colored: 'bg-gradient-to-br from-primary/5 to-secondary/5',
-        glass: 'bg-white/80 backdrop-blur-md border-white/20',
+        default: 'bg-white dark:bg-slate-800',
+        gradient: 'bg-gradient-to-br from-white to-bg-secondary dark:from-slate-800 dark:to-slate-900',
+        colored: 'bg-gradient-to-br from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10',
+        glass: 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-white/20 dark:border-white/10',
     };
 
     const paddingStyles = {
@@ -36,8 +36,8 @@ export const Card = ({
             className={`
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
-        rounded-3xl border border-slate-100
-        shadow-xl shadow-slate-200/50 transition-all duration-300
+        rounded-3xl border border-slate-100 dark:border-slate-700
+        shadow-xl shadow-slate-200/50 dark:shadow-black/20 transition-all duration-300
         ${className}
       `}
             whileHover={hover ? {

@@ -35,7 +35,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
 
     const buttonStyles = {
         default: "w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4",
-        pill: "flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 hover:bg-slate-100 transition-colors"
+        pill: "flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
     };
 
     return (

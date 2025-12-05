@@ -97,7 +97,7 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
     if (beneficiaries.length === 0) {
       return (
         <div className="text-center p-12 text-slate-400">
-          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <UsersIcon className="h-10 w-10 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-white">Sin Beneficiarios</h3>
@@ -129,7 +129,7 @@ const Beneficiaries: React.FC<BeneficiariesProps> = ({ user, onSelectBeneficiary
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleEdit(ben)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-primary transition-colors">
+                    <button onClick={() => handleEdit(ben)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 hover:text-primary transition-colors">
                       <PencilIcon className="w-4 h-4" />
                     </button>
                     <button onClick={() => handleDelete(ben.id)} className="p-2 hover:bg-red-50 rounded-full text-slate-400 hover:text-error transition-colors">
