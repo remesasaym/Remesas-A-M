@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Country } from '../types';
-import { COUNTRIES, FX_SPREAD_PERCENTAGE } from '../constants';
+import { COUNTRIES, MARGEN_EXCHANGE, REMITTANCE_FEE_PERCENTAGE } from '../constants';
 import {
   fetchExchangeRates,
   refreshExchangeRates,
@@ -9,6 +9,7 @@ import {
   getExchangeRate,
   type ExchangeRates
 } from '../services/exchangeRateService';
+import { loadSystemSettings } from '../services/settingsService';
 
 interface ExchangeRateContextType {
   countriesWithLatestRates: Country[];
@@ -19,6 +20,7 @@ interface ExchangeRateContextType {
   refreshRates: () => Promise<void>;
   convertAmount: (amount: number, fromCurrency: string, toCurrency: string, applySpread?: boolean) => number;
   getRate: (fromCurrency: string, toCurrency: string, applySpread?: boolean) => number;
+  remittanceFee: number;
 }
 
 const ExchangeRateContext = createContext<ExchangeRateContextType | undefined>(undefined);
@@ -29,11 +31,22 @@ export const ExchangeRateProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [margin, setMargin] = useState<number>(MARGEN_EXCHANGE);
+  const [remittanceFee, setRemittanceFee] = useState<number>(REMITTANCE_FEE_PERCENTAGE);
 
   const loadRates = async () => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Cargar configuraciones dinámicas primero
+      const settings = await loadSystemSettings();
+      setMargin(settings.margen_exchange);
+      if (settings.remittance_fee_percentage !== undefined) {
+        setRemittanceFee(settings.remittance_fee_percentage);
+      }
+      console.log('⚙️ Config cargada:', { margin: settings.margen_exchange, fee: settings.remittance_fee_percentage });
+
       const rates = await fetchExchangeRates();
 
       if (!rates) {
@@ -111,7 +124,7 @@ export const ExchangeRateProvider: React.FC<{ children: ReactNode }> = ({ childr
         let result = usdAmount * toCountry.exchangeRateToUSD;
 
         if (applySpread) {
-          result = result * (1 - FX_SPREAD_PERCENTAGE);
+          result = result * margin;
         }
 
         return result;
@@ -120,7 +133,7 @@ export const ExchangeRateProvider: React.FC<{ children: ReactNode }> = ({ childr
       return amount;
     }
 
-    return convertCurrency(amount, fromCurrency, toCurrency, liveRates, applySpread);
+    return convertCurrency(amount, fromCurrency, toCurrency, liveRates, applySpread, margin);
   };
 
   const getRate = (
@@ -137,7 +150,7 @@ export const ExchangeRateProvider: React.FC<{ children: ReactNode }> = ({ childr
         let rate = toCountry.exchangeRateToUSD / fromCountry.exchangeRateToUSD;
 
         if (applySpread) {
-          rate = rate * (1 - FX_SPREAD_PERCENTAGE);
+          rate = rate * margin;
         }
 
         return rate;
@@ -146,7 +159,7 @@ export const ExchangeRateProvider: React.FC<{ children: ReactNode }> = ({ childr
       return 0;
     }
 
-    return getExchangeRate(fromCurrency, toCurrency, liveRates, applySpread);
+    return getExchangeRate(fromCurrency, toCurrency, liveRates, applySpread, margin);
   };
 
   const value = {
@@ -158,6 +171,7 @@ export const ExchangeRateProvider: React.FC<{ children: ReactNode }> = ({ childr
     refreshRates: refreshRatesManual,
     convertAmount,
     getRate,
+    remittanceFee,
   };
 
   return (

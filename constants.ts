@@ -37,11 +37,11 @@ export const COUNTRIES: Country[] = [
 // Comisión base sobre el monto enviado
 export const REMITTANCE_FEE_PERCENTAGE = 0.025; // 2.5% (bajado de 9%)
 
-// Spread aplicado sobre la tasa de cambio FX
-export const FX_SPREAD_PERCENTAGE = 0.005; // 0.5%
+// Margen simétrico aplicado a todas las tazas de cambio
+export const MARGEN_EXCHANGE = 0.95; // 95% del valor real (5% de margen)
 
-// Ganancia total aproximada: 2.5% + 0.5% = ~3% (vs 9% anterior)
-// Esto nos hace competitivos con Remitly (2-4%) y WorldRemit (3-5%)
+// Ganancia total aproximada: 2.5% + (1 - 0.95)% = ~7.5%
+// Esto nos da un margen saludable manteniendo competitividad
 
 // Otras comisiones
 export const PAYPAL_FEE_PERCENTAGE = 0.06; // 6% para PayPal

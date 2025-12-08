@@ -83,8 +83,8 @@ export default function AdminPanel({ user }: { user: { email?: string; id?: stri
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === t.id
-                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                  ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                   }`}
               >
                 <t.icon size={16} />
@@ -218,26 +218,45 @@ export default function AdminPanel({ user }: { user: { email?: string; id?: stri
               <Card variant="default" padding="lg">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Configuración del Sistema</h3>
                 <div className="space-y-4">
-                  {settings.map((s, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                          {s.key || 'Configuración'}
-                        </label>
-                        <input
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                          value={s.value || ''}
-                          onChange={e => { const next = [...settings]; next[idx] = { ...s, value: e.target.value }; setSettings(next) }}
-                        />
+                  {settings
+                    .sort((a, b) => {
+                      // Orden personalizado
+                      const order = ['remittance_fee_percentage', 'margen_exchange'];
+                      const indexA = order.indexOf(a.key);
+                      const indexB = order.indexOf(b.key);
+
+                      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                      if (indexA !== -1) return -1;
+                      if (indexB !== -1) return 1;
+                      return a.key.localeCompare(b.key);
+                    })
+                    .map((s, idx) => (
+                      <div key={s.key || idx} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            {s.key === 'remittance_fee_percentage' ? 'Comisión de Envío (%)' :
+                              s.key === 'margen_exchange' ? 'Margen de Cambio (0.95 = 5%)' :
+                                s.key}
+                          </label>
+                          <input
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            value={s.value || ''}
+                            onChange={e => {
+                              const newSettings = settings.map(item =>
+                                item.key === s.key ? { ...item, value: e.target.value } : item
+                              );
+                              setSettings(newSettings);
+                            }}
+                          />
+                        </div>
+                        <Button
+                          onClick={async () => { await saveSettings(s); const list = await fetchSettings(); setSettings(list) }}
+                          className="mt-6 sm:mt-0"
+                        >
+                          Guardar
+                        </Button>
                       </div>
-                      <Button
-                        onClick={async () => { await saveSettings(s); const list = await fetchSettings(); setSettings(list) }}
-                        className="mt-6 sm:mt-0"
-                      >
-                        Guardar
-                      </Button>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </Card>
             )}

@@ -1,6 +1,7 @@
 // Service to fetch live exchange rates from ExchangeRate-API
 // Free tier: 1500 requests/month (enough for MVP)
 // Docs: https://www.exchangerate-api.com/docs/overview
+import { MARGEN_EXCHANGE } from '../constants';
 
 export interface ExchangeRates {
     base: string;
@@ -62,7 +63,8 @@ export function convertCurrency(
     fromCurrency: string,
     toCurrency: string,
     rates: ExchangeRates,
-    applySpread: boolean = true
+    applySpread: boolean = true,
+    margin: number = MARGEN_EXCHANGE
 ): number {
     if (!rates || !rates.rates) {
         throw new Error('Exchange rates not available');
@@ -80,10 +82,9 @@ export function convertCurrency(
     const usdAmount = amount / fromRate;
     let convertedAmount = usdAmount * toRate;
 
-    // Apply 0.5% spread in our favor (reduce the amount user receives slightly)
+    // Apply spread in our favor (reduce the amount user receives slightly)
     if (applySpread) {
-        const FX_SPREAD = 0.005; // 0.5%
-        convertedAmount = convertedAmount * (1 - FX_SPREAD);
+        convertedAmount = convertedAmount * margin;
     }
 
     return convertedAmount;
@@ -96,7 +97,8 @@ export function getExchangeRate(
     fromCurrency: string,
     toCurrency: string,
     rates: ExchangeRates,
-    applySpread: boolean = true
+    applySpread: boolean = true,
+    margin: number = MARGEN_EXCHANGE
 ): number {
     if (!rates || !rates.rates) {
         return 0;
@@ -113,8 +115,7 @@ export function getExchangeRate(
 
     // Apply spread
     if (applySpread) {
-        const FX_SPREAD = 0.005; // 0.5%
-        rate = rate * (1 - FX_SPREAD);
+        rate = rate * margin;
     }
 
     return rate;

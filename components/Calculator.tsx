@@ -1,7 +1,6 @@
 // src/components/Calculator.tsx
 import React, { useState, useMemo, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { REMITTANCE_FEE_PERCENTAGE } from '../constants';
 import { useExchangeRates } from '../contexts/ExchangeRateContext';
 import SwapIcon from './icons/SwapIcon';
 import ClockIcon from './icons/ClockIcon';
@@ -161,7 +160,7 @@ const TransactionSummaryModal: React.FC<TransactionSummaryModalProps> = ({ detai
 
 const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
   ({ user, setActiveScreen, prefillData, onClearPrefill }, ref) => {
-    const { countriesWithLatestRates: COUNTRIES, isLoading: areRatesLoading, getRate } = useExchangeRates();
+    const { countriesWithLatestRates: COUNTRIES, isLoading: areRatesLoading, getRate, convertAmount, remittanceFee } = useExchangeRates();
 
     // Estado del flujo
     const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
@@ -320,14 +319,10 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
 
       if (!fromCountry || !toCountry) return null;
 
-      const feeCalc = numericAmount * REMITTANCE_FEE_PERCENTAGE;
+      const feeCalc = numericAmount * remittanceFee;
       const total = numericAmount + feeCalc;
 
-      const amountInUSD = fromCountry.currency === 'USD'
-        ? numericAmount
-        : numericAmount / fromCountry.exchangeRateToUSD;
-
-      const amountReceived = amountInUSD * toCountry.exchangeRateToUSD;
+      const amountReceived = convertAmount(numericAmount, fromCountry.currency, toCountry.currency, true);
 
       const displayedRate = getRate(fromCountry.currency, toCountry.currency, true);
       const rateText = `1 ${fromCountry.currency} ≈ ${displayedRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${toCountry.currency}`;
@@ -341,7 +336,7 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
         exchangeRateText: rateText,
         arrivalTime: arrival,
       };
-    }, [fromCountryCode, toCountryCode, amount, COUNTRIES, getRate]);
+    }, [fromCountryCode, toCountryCode, amount, COUNTRIES, getRate, convertAmount, remittanceFee]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
