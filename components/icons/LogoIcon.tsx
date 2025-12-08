@@ -1,8 +1,8 @@
-import React from 'react';
+import { LOGO_BASE64 } from '../../src/assets/logoData';
 
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
   <img
-    src="/logo-final.png"
+    src={LOGO_BASE64}
     alt="Logo de Remesas A&M"
     className={className}
   />
