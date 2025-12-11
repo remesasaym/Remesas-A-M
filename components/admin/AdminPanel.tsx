@@ -5,6 +5,7 @@ import KycReviewPanel from './KycReviewPanel';
 import Transactions from './Transactions';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { toast } from 'sonner';
 import { LayoutDashboard, Users, Settings, Activity, ShieldCheck, Search, Filter } from 'lucide-react';
 import { PageTransition } from '../animations/PageTransition';
 
@@ -181,14 +182,34 @@ export default function AdminPanel({ user }: { user: { email?: string; id?: stri
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={async () => { await updateUser(u.id, { is_verified: !u.is_verified }); const list = await fetchUsers(); setUsers(list) }}
+                              onClick={() => {
+                                toast.promise(async () => {
+                                  await updateUser(u.id, { is_verified: !u.is_verified });
+                                  const list = await fetchUsers();
+                                  setUsers(list);
+                                }, {
+                                  loading: 'Actualizando estado...',
+                                  success: 'Estado actualizado correctamente',
+                                  error: 'Error al actualizar estado'
+                                });
+                              }}
                             >
                               {u.is_verified ? 'Invalidar' : 'Verificar'}
                             </Button>
                             <Button
                               variant="danger"
                               size="sm"
-                              onClick={async () => { if (confirm('¿Estás seguro?')) { await deleteUser(u.id); const list = await fetchUsers(); setUsers(list) } }}
+                              onClick={() => {
+                                toast.promise(async () => {
+                                  await deleteUser(u.id);
+                                  const list = await fetchUsers();
+                                  setUsers(list);
+                                }, {
+                                  loading: 'Eliminando usuario...',
+                                  success: 'Usuario eliminado correctamente',
+                                  error: 'Error al eliminar usuario'
+                                });
+                              }}
                             >
                               Eliminar
                             </Button>
@@ -250,7 +271,17 @@ export default function AdminPanel({ user }: { user: { email?: string; id?: stri
                           />
                         </div>
                         <Button
-                          onClick={async () => { await saveSettings(s); const list = await fetchSettings(); setSettings(list) }}
+                          onClick={() => {
+                            toast.promise(async () => {
+                              await saveSettings(s);
+                              const list = await fetchSettings();
+                              setSettings(list);
+                            }, {
+                              loading: 'Guardando configuración...',
+                              success: 'Configuración guardada',
+                              error: 'Error al guardar configuración'
+                            });
+                          }}
                           className="mt-6 sm:mt-0"
                         >
                           Guardar

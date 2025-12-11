@@ -6,6 +6,7 @@ import { Input } from './ui/Input';
 import { supabase } from '../supabaseClient';
 import PhoneNumberInput from './common/PhoneNumberInput';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const AuthScreen: React.FC = () => {
   const [view, setView] = useState<'login' | 'register' | 'forgotPassword'>('login');
@@ -33,7 +34,12 @@ const AuthScreen: React.FC = () => {
 
     if (view === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
+      if (error) {
+        toast.error(error.message);
+        setError(error.message);
+      } else {
+        toast.success('¡Bienvenido de nuevo!');
+      }
     } else if (view === 'register') {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -44,9 +50,11 @@ const AuthScreen: React.FC = () => {
       });
 
       if (signUpError) {
+        toast.error(signUpError.message);
         setError(signUpError.message);
       } else if (signUpData.user) {
         const successMsg = "¡Registro exitoso! Revisa tu correo electrónico para completar la verificación.";
+        toast.success(successMsg);
         setAuthMessage(successMsg);
         setEmail('');
         setPassword('');
@@ -66,9 +74,12 @@ const AuthScreen: React.FC = () => {
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
 
     if (resetError) {
+      toast.error(resetError.message);
       setError(resetError.message);
     } else {
-      setAuthMessage('Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico.');
+      const msg = 'Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico.';
+      toast.success(msg);
+      setAuthMessage(msg);
     }
     setLoading(false);
   }

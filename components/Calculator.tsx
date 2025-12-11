@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExchangeRates } from '../contexts/ExchangeRateContext';
+import { toast } from 'sonner';
 import SwapIcon from './icons/SwapIcon';
 import ClockIcon from './icons/ClockIcon';
 import type { User, Beneficiary } from '../types';
@@ -422,9 +423,10 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
         setReceiptUrl(data.publicUrl);
         setStep(4);
         setIsSummaryVisible(true);
+        toast.success('Comprobante subido correctamente');
       } catch (error: any) {
         console.error('Upload error:', error);
-        alert('Error subiendo comprobante: ' + (error.message || 'Error desconocido'));
+        toast.error('Error subiendo comprobante: ' + (error.message || 'Error desconocido'));
       } finally {
         setIsUploading(false);
       }
@@ -434,7 +436,8 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
       logger.info('handleConfirmSend called');
       setIsSubmitting(true);
       setSubmissionError(null);
-      try {
+
+      const promise = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error('No hay sesión activa');
 
@@ -465,24 +468,33 @@ const Calculator = forwardRef<CalculatorRef, CalculatorProps>(
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           const errorMessage = errorData.message || errorData.error || 'Error al enviar la remesa';
-          alert(errorMessage);
           throw new Error(errorMessage);
         }
         const data = await response.json();
-        setTransactionId(data.transaction_id);
-        setIsSummaryVisible(false);
-        setStep(5);
-      } catch (err) {
-        console.error('handleConfirmSend error:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Error inesperado';
-        setSubmissionError(errorMessage);
-        if (!errorMessage.includes('mínimo')) {
+        return data;
+      };
+
+      toast.promise(promise(), {
+        loading: 'Procesando tu envío...',
+        success: (data) => {
+          setTransactionId(data.transaction_id);
           setIsSummaryVisible(false);
-          setStep(6);
-        }
-      } finally {
-        setIsSubmitting(false);
-      }
+          setStep(5);
+          return '¡Envío realizado con éxito!';
+        },
+        error: (err) => {
+          console.error('handleConfirmSend error:', err);
+          const errorMessage = err instanceof Error ? err.message : 'Error inesperado';
+          setSubmissionError(errorMessage);
+          if (!errorMessage.includes('mínimo')) {
+            setIsSummaryVisible(false);
+            setStep(6);
+          }
+          return errorMessage;
+        },
+      });
+
+      setIsSubmitting(false);
     };
 
     const handleSwap = () => {

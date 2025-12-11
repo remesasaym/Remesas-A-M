@@ -14,6 +14,7 @@ import PhoneNumberInput from './common/PhoneNumberInput';
 import Spinner from './common/Spinner';
 import { logger } from '../services/logger';
 import { PageTransition } from './animations/PageTransition';
+import { toast } from 'sonner';
 
 interface ProfileProps {
   user: User;
@@ -129,8 +130,8 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     setSaveMessage(null);
     try {
       await onProfileUpdate({ phone });
-      setSaveMessage({ type: 'success', text: '¡Guardado!' });
-      setTimeout(() => setSaveMessage(null), 3000);
+      await onProfileUpdate({ phone });
+      toast.success('¡Teléfono actualizado correctamente!');
       setIsEditingPhone(false);
     } catch (error) {
       setSaveMessage({ type: 'error', text: 'Error al guardar.' });
@@ -209,7 +210,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
       const lowerCaseError = errorMessage.toLowerCase();
 
       if (lowerCaseError.includes('no se pudo procesar la imagen') || lowerCaseError.includes('unable to process')) {
-        alert("⚠️ Foto no legible\n\nAsegúrate de:\n• Buena iluminación\n• Sin reflejos\n• Documento completo en la foto\n• Enfocada y nítida");
+        toast.error("⚠️ Foto no legible. Asegúrate de tener buena iluminación y enfoque.");
         setFormError("La imagen no es legible. Por favor, intenta de nuevo siguiendo las recomendaciones.");
       } else if (lowerCaseError.includes('api key') || lowerCaseError.includes('authentication')) {
         setFormError("El servicio de verificación no está disponible por un problema de configuración. Por favor, contacta al soporte.");

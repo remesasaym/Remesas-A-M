@@ -11,6 +11,7 @@ import VirtualAssistant from './VirtualAssistant';
 import AdminPanel from './admin/AdminPanel';
 import DashboardWelcome from './DashboardWelcome';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Toaster } from './ui/Toaster';
 
 interface MainAppProps {
   user: User;
@@ -126,6 +127,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
       </main>
 
       <VirtualAssistant />
+      <Toaster />
     </div>
   );
 };
