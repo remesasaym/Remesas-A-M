@@ -5,9 +5,10 @@ const logger = require("pino")();
 const { encrypt, decrypt } = require("../services/encryptionService");
 const { validateThunesWebhook } = require("../middleware/webhookValidator");
 const { sendRemittanceUpdateEmail } = require('../services/notificationService');
+const { remittanceLimiter } = require("../middleware/rateLimiter");
 
 // Endpoint para enviar una nueva remesa
-router.post("/send", async (req, res) => {
+router.post("/send", remittanceLimiter, async (req, res) => {
   const {
     userId,
     amountSent,

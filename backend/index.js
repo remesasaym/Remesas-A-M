@@ -60,7 +60,7 @@ const remittanceRoutes = require("./routes/remittances");
 const exchangeRoutes = require("./routes/exchange");
 const kycRoutes = require("./routes/kyc");
 
-app.use("/api/remittances", requireAuth, remittanceLimiter, remittanceRoutes);
+app.use("/api/remittances", requireAuth, remittanceRoutes);
 app.use("/api/exchange", exchangeRoutes);
 
 // Endpoint público de KYC (solo lectura de status)
