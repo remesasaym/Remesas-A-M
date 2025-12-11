@@ -81,6 +81,30 @@ const History: React.FC<HistoryProps> = ({ user }) => {
     };
 
     fetchTransactions();
+
+    // Realtime Subscription
+    const channel = supabase
+      .channel('realtime-history')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Realtime change received!', payload);
+          fetchTransactions();
+          // Optional: Show a toast notification
+          // toast.info('Historial actualizado');
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user.id]);
 
   const handleSortAndResetPage = (key: SortKey) => {

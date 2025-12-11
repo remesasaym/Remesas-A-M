@@ -64,6 +64,33 @@ const DashboardWelcome: React.FC<DashboardWelcomeProps> = ({ user, onNewTransact
         };
 
         fetchStats();
+
+        // Realtime Subscription
+        const channel = import('../supabaseClient').then(m => {
+            const client = m.supabase;
+            const subscription = client
+                .channel('realtime-dashboard')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'transactions',
+                        filter: `user_id=eq.${user.id}`
+                    },
+                    () => {
+                        console.log('Dashboard update received!');
+                        fetchStats();
+                    }
+                )
+                .subscribe();
+
+            return subscription;
+        });
+
+        return () => {
+            channel.then(sub => import('../supabaseClient').then(m => m.supabase.removeChannel(sub)));
+        };
     }, [user.id]);
 
     return (
