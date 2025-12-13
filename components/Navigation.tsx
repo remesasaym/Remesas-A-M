@@ -1,5 +1,6 @@
 import React from 'react';
-import { Home, Send, Users, Clock, User, ShieldCheck, Info, LogOut } from 'lucide-react';
+import { Home, Send, Users, Clock, User, ShieldCheck, Info, LogOut, Gift } from 'lucide-react';
+
 import { Screen } from '../types';
 import { User as UserType } from '../types';
 import { isAdmin } from '../services/adminService';
@@ -22,6 +23,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeScreen, setActiveS
         { id: Screen.Calculator, icon: Send, label: 'Enviar' },
         { id: Screen.Beneficiaries, icon: Users, label: 'Contactos' },
         { id: Screen.History, icon: Clock, label: 'Historial' },
+        { id: Screen.Referrals, icon: Gift, label: 'Invita y Gana' }, // Nuevo
         { id: Screen.Profile, icon: User, label: 'Perfil' },
         { id: Screen.Info, icon: Info, label: 'Info' },
     ];

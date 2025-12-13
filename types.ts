@@ -5,6 +5,8 @@ export type User = SupabaseUser & {
   fullName: string;
   isVerified: boolean;
   phone?: string;
+  referralCode?: string;
+  credits?: number;
 };
 
 // FIX: Added missing Beneficiary interface.
@@ -45,6 +47,7 @@ export enum Screen {
   Profile,
   Info,
   Admin, // Nuevo: Pantalla para el panel de administración
+  Referrals, // Nuevo: Pantalla de referidos
 }
 
 export interface ChatMessage {

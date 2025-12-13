@@ -9,7 +9,15 @@ import History from './History';
 import Beneficiaries from './Beneficiaries';
 import VirtualAssistant from './VirtualAssistant';
 import AdminPanel from './admin/AdminPanel';
-import DashboardWelcome from './DashboardWelcome';
+import Referrals from './Referrals';
+
+// ... (inside renderScreen switch)
+      case Screen.Beneficiaries:
+return <Beneficiaries user={user} onSelectBeneficiary={handleSelectBeneficiary} />;
+      case Screen.Referrals:
+return <Referrals user={user} />;
+      default:
+return <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />;
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from './ui/Toaster';
 
