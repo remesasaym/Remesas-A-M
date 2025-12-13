@@ -9,10 +9,14 @@ import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import LogoIcon from './components/icons/LogoIcon';
 import { motion } from 'framer-motion';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { useSessionKeepAlive } from './hooks/useSessionKeepAlive';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Keep session alive
+  useSessionKeepAlive();
 
   // Función para obtener el perfil del usuario de nuestra tabla 'profiles'
   const fetchUserProfile = async (supabaseUser: SupabaseUser): Promise<User | null> => {

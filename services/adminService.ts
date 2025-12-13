@@ -47,7 +47,16 @@ export async function fetchUsers(): Promise<any[]> {
   const headers = await authHeaders()
   const backend = await tryBackend<any[]>('/api/admin/users', { headers })
   if (backend) return backend
-  const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, phone, is_verified, updated_at, referral_code, credits')
+    .order('updated_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching users from Supabase:', error)
+    return []
+  }
+
   return data || []
 }
 
@@ -75,7 +84,11 @@ export async function fetchSettings(): Promise<any[]> {
   const headers = await authHeaders()
   const backend = await tryBackend<any[]>('/api/admin/settings', { headers })
   if (backend) return backend
-  const { data } = await supabase.from('settings').select('*')
+  const { data, error } = await supabase.from('settings').select('id, key, value, updated_at, updated_by')
+  if (error) {
+    console.error('Error fetching settings from Supabase:', error)
+    return []
+  }
   return data || []
 }
 
@@ -95,7 +108,11 @@ export async function fetchActivity(): Promise<{ transactions: any[]; verificati
   const headers = await authHeaders()
   const backend = await tryBackend<{ transactions: any[]; verifications: any[] }>('/api/admin/activity', { headers })
   if (backend) return backend
-  const tx = await supabase.from('transactions').select('*').order('created_at', { ascending: false }).limit(50)
-  const ver = await supabase.from('verification_requests').select('*').order('created_at', { ascending: false }).limit(50)
+  const tx = await supabase.from('transactions').select('id, transaction_id, amount_sent, currency_sent, amount_received, currency_received, status, created_at, user_id, recipient_name').order('created_at', { ascending: false }).limit(50)
+  const ver = await supabase.from('verification_requests').select('id, user_id, status, created_at, reviewed_at, reviewed_by').order('created_at', { ascending: false }).limit(50)
+
+  if (tx.error) console.error('Error fetching transactions:', tx.error)
+  if (ver.error) console.error('Error fetching verifications:', ver.error)
+
   return { transactions: tx.data || [], verifications: ver.data || [] }
 }

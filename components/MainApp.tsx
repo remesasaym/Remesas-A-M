@@ -10,14 +10,7 @@ import Beneficiaries from './Beneficiaries';
 import VirtualAssistant from './VirtualAssistant';
 import AdminPanel from './admin/AdminPanel';
 import Referrals from './Referrals';
-
-// ... (inside renderScreen switch)
-      case Screen.Beneficiaries:
-return <Beneficiaries user={user} onSelectBeneficiary={handleSelectBeneficiary} />;
-      case Screen.Referrals:
-return <Referrals user={user} />;
-      default:
-return <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />;
+import DashboardWelcome from './DashboardWelcome';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from './ui/Toaster';
 
@@ -80,6 +73,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
   };
 
   const renderScreen = () => {
+    console.log('Rendering screen:', activeScreen); // DEBUG LOG
     switch (activeScreen) {
       case Screen.Home:
         return <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />;
@@ -97,13 +91,15 @@ const MainApp: React.FC<MainAppProps> = ({ user, onProfileUpdate }) => {
         return <AdminPanel user={user} />;
       case Screen.Beneficiaries:
         return <Beneficiaries user={user} onSelectBeneficiary={handleSelectBeneficiary} />;
+      case Screen.Referrals:
+        return <Referrals user={user} />;
       default:
         return <DashboardWelcome user={user} onNewTransaction={handleNewTransactionClick} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-bg-primary dark:bg-gray-900 text-text-primary pb-24 md:pb-0 md:pl-24 relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-bg-primary dark:bg-gray-900 text-text-primary pb-24 md:pb-0 md:pl-20 relative overflow-hidden transition-colors duration-300">
 
       {/* Decorative Background Blobs */}
       <div className="fixed top-[-10%] right-[-5%] w-96 h-96 bg-secondary/10 rounded-full blur-3xl -z-10 pointer-events-none" />

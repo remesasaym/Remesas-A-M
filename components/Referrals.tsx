@@ -23,6 +23,7 @@ interface Stats {
 }
 
 export default function Referrals({ user }: ReferralsProps) {
+    console.log('Referrals component mounted'); // DEBUG LOG
     const [code, setCode] = useState<string | null>(user.referralCode || null);
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -187,8 +188,8 @@ export default function Referrals({ user }: ReferralsProps) {
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${item.status === 'COMPLETED'
-                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                                     }`}>
                                     {item.status === 'COMPLETED' ? 'Completado (+Crédito)' : 'Pendiente'}
                                 </span>
