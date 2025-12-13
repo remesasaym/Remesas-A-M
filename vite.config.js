@@ -26,19 +26,21 @@ export default defineConfig(({ mode }) => {
                     background_color: '#ffffff',
                     display: 'standalone',
                     orientation: 'portrait',
+                    start_url: '/',
+                    scope: '/',
                     icons: [
                         {
-                            src: 'logo-final.png',
+                            src: '/logo-final.png',
                             sizes: '192x192',
                             type: 'image/png'
                         },
                         {
-                            src: 'logo-final.png',
+                            src: '/logo-final.png',
                             sizes: '512x512',
                             type: 'image/png'
                         },
                         {
-                            src: 'logo-final.png',
+                            src: '/logo-final.png',
                             sizes: '512x512',
                             type: 'image/png',
                             purpose: 'any maskable'
